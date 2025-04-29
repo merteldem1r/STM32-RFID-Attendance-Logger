@@ -1,0 +1,51 @@
+# STM32CubeIDE
+*.launch
+*.settings/
+*.mxproject
+*.cproject
+*.project
+*.ioc
+build/
+Debug/
+Release/
+*.elf
+*.bin
+*.hex
+*.map
+*.lst
+*.log
+*.dep
+*.o
+*.d
+*.s
+*.bak
+*.swp
+
+# Keil / MDK if ever used
+*.uvoptx
+*.uvprojx
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv
+venv/
+env/
+*.egg-info/
+dist/
+build/
+
+# VSCode & Pycharm IDE folder ignore 
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# OS / Editor files
+.DS_Store
+Thumbs.db
+*.~*
