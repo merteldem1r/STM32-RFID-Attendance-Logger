@@ -1,13 +1,17 @@
 import serial
-import time
 
-ser = serial.Serial('/dev/tty.debug-console')
+ser = serial.Serial('/dev/cu.usbserial-10')
 ser.baudrate = 115200
+print(ser.name)
 
-print("Serial at port: ", ser.name)
 
-while True:
-    val = ser.readline()
-    val_str = str(val, "UTF-8")
-    print(val_str)
-    time.sleep(3)
+try:
+    while True:
+
+        if ser.in_waiting > 0:
+            data = ser.readline().decode('utf-8').strip()
+            print(f"Received: {data}")
+except KeyboardInterrupt:
+    print("Stopped by user")
+finally:
+    ser.close()
