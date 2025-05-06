@@ -4,7 +4,6 @@
 *.mxproject
 *.cproject
 *.project
-*.ioc
 build/
 Debug/
 Release/
