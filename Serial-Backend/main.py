@@ -9,7 +9,7 @@ print(ser.name)
 # TO DO:
 # 1- when the programme first run check if db excel file exist (if not create db excel file)
 # 2- create serial communication with microcontroller
-# 3- create interval (2 seconds) of heartbeat to mq
+# 3- create interval (2 seconds) of heartbeat to STM32
 # connected. errorhandling
 # 4- wait messages from STM32:
 #       4.1- SAVE: save the card UID to db.csv, send "OK " message to STM32
@@ -18,16 +18,26 @@ print(ser.name)
 
 CSV_UTIL.Initialize_DB()
 
+
 try:
     while True:
         if ser.in_waiting > 0:
             data = ser.readline().decode("utf-8").strip()
             data_list = data.split(" ")
-            if data_list[0] == "1":
+            print(data_list)
+
+            rfid_mode = data_list[0]
+            card_uid_list = data_list[1:]
+            card_uid_str = ' '.join(card_uid_list)
+            
+            
+            if rfid_mode == "1": 
                 # SAVE
-                CSV_UTIL.save_db(data_list)
-            else:
+                CSV_UTIL.save_db(card_uid_str)
+            elif rfid_mode == "0":
                 # READ
+                pass
+            else:
                 pass
 
             print(data_list)
