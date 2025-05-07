@@ -49,13 +49,6 @@
 SPI_HandleTypeDef hspi1;
 
 /* USER CODE BEGIN PV */
-MFRC522_Status_t status;
-uint8_t CardUID[4];
-
-uint8_t LastCardUID[4];
-char LastCardHexStr[12];
-
-char *msg = "";
 
 /* USER CODE END PV */
 
@@ -72,10 +65,48 @@ void MX_USB_HOST_Process(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+// MFRC522 GLOBAL VARIABLES
+MFRC522_Status_t status;
+uint8_t CardUID[4];
+
+uint8_t LastCardUID[4];
+char LastCardHexStr[12];
+
+// RFID MODULE SETTINGS
+RFID_Mode Rfid_Mode = RFID_SAVE;
+
+// SERIAL COMMUNICATION STATUS & SETTINGS
+SERIAL_Status Serial_Status = SERIAL_PENDING;
+
 void Beep() {
 	HAL_GPIO_WritePin(BUZZER_PORT, BUZZER_PIN, GPIO_PIN_SET);
 	HAL_Delay(25);
 	HAL_GPIO_WritePin(BUZZER_PORT, BUZZER_PIN, GPIO_PIN_RESET);
+}
+
+// RFID Mode Operations
+void ToggleRfidMode() {
+	Rfid_Mode = (RFID_MODE + 1) % 2;
+}
+
+void SetRfidModeLED() {
+	if (Serial_Status == SERIAL_PENDING || Serial_Status == SERIAL_ERR) {
+		return;
+	}
+
+	if (Rfid_Mode == RFID_SAVE) {
+		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_SET);
+	} else if (RFID_MODE == WRITING) {
+		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_SET);
+	}
+}
+
+// Reset RFID Mode & SERIAL Status LEDS
+void ResetAllLedsSTM() {
+	HAL_GPIO_WritePin(STM_LED_PORT, RFID_READ_LED_PIN, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(STM_LED_PORT, RFID_WRITE_LED_PIN, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(STM_LED_PORT, SERIAL_PENGING_LED_PIN, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(STM_LED_PORT, SERIAL_ERR_LED_PIN, GPIO_PIN_RESET);
 }
 
 /* USER CODE END 0 */
@@ -112,6 +143,9 @@ int main(void) {
 	MX_USB_HOST_Init();
 	/* USER CODE BEGIN 2 */
 	MFRC522_Init();
+
+	HAL_GPIO_WritePin(STM_LED_PORT, SERIAL_PENGING_LED_PIN, GPIO_PIN_SET);
+	// Serial communication
 
 	/* USER CODE END 2 */
 
