@@ -19,6 +19,7 @@ Release/
 *.s
 *.bak
 *.swp
+*.metadata
 
 # Keil / MDK if ever used
 *.uvoptx

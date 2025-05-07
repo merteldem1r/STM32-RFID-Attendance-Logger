@@ -1,20 +1,20 @@
 /* USER CODE BEGIN Header */
 /**
- ******************************************************************************
- * @file           : main.c
- * @brief          : Main program body
- ******************************************************************************
- * @attention
- *
- * Copyright (c) 2025 STMicroelectronics.
- * All rights reserved.
- *
- * This software is licensed under terms that can be found in the LICENSE file
- * in the root directory of this software component.
- * If no LICENSE file comes with this software, it is provided AS-IS.
- *
- ******************************************************************************
- */
+  ******************************************************************************
+  * @file           : main.c
+  * @brief          : Main program body
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2025 STMicroelectronics.
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
+  ******************************************************************************
+  */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -22,11 +22,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "stdio.h"
-#include "string.h"
-
-#include "defines.h"
-#include "MFRC522.h"
 
 /* USER CODE END Includes */
 
@@ -49,14 +44,6 @@
 SPI_HandleTypeDef hspi1;
 
 /* USER CODE BEGIN PV */
-
-MFRC522_Status_t status;
-uint8_t CardUID[4];
-
-uint8_t LastCardUID[4];
-char LastCardHexStr[12];
-
-char *msg = "";
 
 /* USER CODE END PV */
 
@@ -108,33 +95,17 @@ int main(void)
   MX_USB_HOST_Init();
   /* USER CODE BEGIN 2 */
 
-	MFRC522_Init();
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-	while (1) {
-		// Check if card is presented
-		status = MFRC522_Request(PICC_REQIDL, CardUID);
-
-		if (status == MI_OK) {
-			//Card detected
-
-			status = MFRC522_Anticoll(CardUID);
-			memcpy(LastCardUID, CardUID, sizeof(CardUID));
-			sprintf(LastCardHexStr, "%02X %02X %02X %02X", LastCardUID[0],
-					LastCardUID[1], LastCardUID[2], LastCardUID[3]);
-			HAL_Delay(500);
-
-		}
-		MFRC522_Halt();
-
+  while (1)
+  {
     /* USER CODE END WHILE */
     MX_USB_HOST_Process();
 
     /* USER CODE BEGIN 3 */
-	}
+  }
   /* USER CODE END 3 */
 }
 
@@ -249,7 +220,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, LD4_Pin|LD3_Pin|LD5_Pin|LD6_Pin
-                          |Audio_RST_Pin|RFID_SDA_Pin|RFID_RST_Pin, GPIO_PIN_RESET);
+                          |Audio_RST_Pin|RFID_SDA_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : CS_I2C_SPI_Pin */
   GPIO_InitStruct.Pin = CS_I2C_SPI_Pin;
@@ -302,9 +273,9 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(CLK_IN_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : LD4_Pin LD3_Pin LD5_Pin LD6_Pin
-                           Audio_RST_Pin RFID_SDA_Pin RFID_RST_Pin */
+                           Audio_RST_Pin RFID_SDA_Pin */
   GPIO_InitStruct.Pin = LD4_Pin|LD3_Pin|LD5_Pin|LD6_Pin
-                          |Audio_RST_Pin|RFID_SDA_Pin|RFID_RST_Pin;
+                          |Audio_RST_Pin|RFID_SDA_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -324,13 +295,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(OTG_FS_OverCurrent_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : Audio_SCL_Pin Audio_SDA_Pin */
-  GPIO_InitStruct.Pin = Audio_SCL_Pin|Audio_SDA_Pin;
+  /*Configure GPIO pin : Audio_SDA_Pin */
+  GPIO_InitStruct.Pin = Audio_SDA_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   GPIO_InitStruct.Alternate = GPIO_AF4_I2C1;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  HAL_GPIO_Init(Audio_SDA_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : MEMS_INT2_Pin */
   GPIO_InitStruct.Pin = MEMS_INT2_Pin;
@@ -354,10 +325,11 @@ static void MX_GPIO_Init(void)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-	/* User can add his own implementation to report the HAL error return state */
-	__disable_irq();
-	while (1) {
-	}
+  /* User can add his own implementation to report the HAL error return state */
+  __disable_irq();
+  while (1)
+  {
+  }
   /* USER CODE END Error_Handler_Debug */
 }
 
