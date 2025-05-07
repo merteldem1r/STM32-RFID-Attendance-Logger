@@ -1,5 +1,4 @@
 import serial
-import csv
 from utils import csv_util as CSV_UTIL
 
 ser = serial.Serial("/dev/cu.usbserial-10")
@@ -12,8 +11,8 @@ print(ser.name)
 # 3- create interval (2 seconds) of heartbeat to STM32
 # connected. errorhandling
 # 4- wait messages from STM32:
-#       4.1- SAVE: save the card UID to db.csv, send "OK " message to STM32
-#       4.2- READ: chech from db if user exist, if exist send user info (e.g. "Mert Eldemir-220201019")
+#       4.1- SAVE: save the card UID to db.csv, send "OK " message to STM32 (is it longer than 4 bytes)
+#       4.2- READ: check from db if user exist, if exist send user info (e.g. "Mert Eldemir-220201019")
 #                                if NOT exist send "ERR" message to STM32
 
 CSV_UTIL.Initialize_DB()
@@ -30,13 +29,15 @@ try:
             card_uid_list = data_list[1:]
             card_uid_str = ' '.join(card_uid_list)
             
-            
-            if rfid_mode == "1": 
+            if rfid_mode == "1":
                 # SAVE
                 CSV_UTIL.save_db(card_uid_str)
+                CSV_UTIL.send_message(ser, message="OK\n")
+                
             elif rfid_mode == "0":
                 # READ
-                pass
+                CSV_UTIL.read_db(ser, card_uid_str)
+                
             else:
                 pass
 
