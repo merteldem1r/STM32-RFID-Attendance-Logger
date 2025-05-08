@@ -113,10 +113,6 @@ void Error_Handler(void);
 #define RFID_SDA_GPIO_Port GPIOD
 #define SPI1_SCK_Pin GPIO_PIN_3
 #define SPI1_SCK_GPIO_Port GPIOB
-#define SPI1_MISO_Pin GPIO_PIN_4
-#define SPI1_MISO_GPIO_Port GPIOB
-#define SPI1_MOSI_Pin GPIO_PIN_5
-#define SPI1_MOSI_GPIO_Port GPIOB
 #define Audio_SDA_Pin GPIO_PIN_9
 #define Audio_SDA_GPIO_Port GPIOB
 #define MEMS_INT2_Pin GPIO_PIN_1

@@ -2,6 +2,9 @@
 // Created By: Mert Eldemir
 // GitHub: https://github.com/merteldem1r
 
+#ifndef DEFINES_H
+#define DEFINES_H
+
 // RC522 MODULE DEFINES
 
 /* Default SPI used for*/
@@ -42,3 +45,4 @@ typedef enum {
 
 // MAIN LOGIC DEFINES
 
+#endif // DEFINES_H
