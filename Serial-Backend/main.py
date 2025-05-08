@@ -23,7 +23,7 @@ try:
         if ser.in_waiting > 0:
             data = ser.readline().decode("utf-8").strip()
             data_list = data.split(" ")
-            print(data_list)
+            # print(data_list)
 
             rfid_mode = data_list[0]
             card_uid_list = data_list[1:]
@@ -31,8 +31,7 @@ try:
             
             if rfid_mode == "1":
                 # SAVE
-                CSV_UTIL.save_db(card_uid_str)
-                CSV_UTIL.send_message(ser, message="OK\n")
+                CSV_UTIL.save_db(ser, card_uid_str)
                 
             elif rfid_mode == "0":
                 # READ
@@ -41,7 +40,7 @@ try:
             else:
                 pass
 
-            print(data_list)
+            # print(data_list)
             print(f"{data}")
 except KeyboardInterrupt:
     print("Stopped by user")
