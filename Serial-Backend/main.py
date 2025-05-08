@@ -1,5 +1,8 @@
 import serial
 from utils import csv_util as CSV_UTIL
+import time
+import threading 
+
 
 ser = serial.Serial("/dev/cu.usbserial-10")
 ser.baudrate = 9600
@@ -18,30 +21,45 @@ print(ser.name)
 CSV_UTIL.Initialize_DB()
 
 
+def heartbeat_thread(ser):
+    while True:
+        try:
+            ser.write(b"HB\n")  # Send heartbeat
+            time.sleep(2)
+        except Exception as e:
+            print(f"Heartbeat thread error: {e}")
+            break
+        
+# Start heartbeat thread
+heartbeat = threading.Thread(target=heartbeat_thread, args=(ser,), daemon=True)
+heartbeat.start()
+
+
 try:
     while True:
         if ser.in_waiting > 0:
             data = ser.readline().decode("utf-8").strip()
             data_list = data.split(" ")
             # print(data_list)
+            
+            if not data_list:  #for empty data like "" or " ".
+                continue
 
             rfid_mode = data_list[0]
             card_uid_list = data_list[1:]
             card_uid_str = ' '.join(card_uid_list)
-            
+
             if rfid_mode == "1":
                 # SAVE
                 CSV_UTIL.save_db(ser, card_uid_str)
-                
             elif rfid_mode == "0":
                 # READ
-                CSV_UTIL.read_db(ser, card_uid_str)
-                
+                CSV_UTIL.read_db(ser, card_uid_str)  
             else:
                 pass
-
             # print(data_list)
             print(f"{data}")
+        time.sleep(0.1)
 except KeyboardInterrupt:
     print("Stopped by user")
 finally:

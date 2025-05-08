@@ -6,6 +6,7 @@ PATH = "./db/uid.csv"
 def Initialize_DB():
     if os.path.exists(PATH):
         return
+    
     field_names = ["card_uid", "user_name", "user_id"]
     df = pd.DataFrame(columns=field_names)
     os.makedirs("./db", exist_ok=True)
