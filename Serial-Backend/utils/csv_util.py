@@ -66,16 +66,13 @@ def read_db(ser, card_uid_str: str):
     
     if card_uid_str in df["card_uid"].values:
         row = df[df["card_uid"] == card_uid_str].iloc[0]
-        user_name = str(row["user_name"]).strip() if pd.notna(row["user_name"]) else None
-        user_id = str(round(row["user_id"])).strip() if pd.notna(row["user_id"]) else None
-        if user_name and user_id:
-            message_toSend = f"{user_name}-{user_id}\n"
-        elif user_name:
-            message_toSend = f"{user_name}-None\n"
-        elif user_id:
-            message_toSend = f"None-{user_id}\n"
-        else:
+        user_name = str(row["user_name"]).strip() if pd.notna(row["user_name"]) else ""
+        user_id = str(round(row["user_id"])).strip() if pd.notna(row["user_id"]) else ""
+        message_toSend = f"{user_name}-{user_id}\n"
+    
+        if not user_name and not user_id:
             message_toSend = "ERR\n"
+            
     else:
         message_toSend = "ERR\n"
 
