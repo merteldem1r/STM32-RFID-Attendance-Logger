@@ -21,7 +21,7 @@ print(ser.name)
 CSV_UTIL.Initialize_DB()
 
 
-def heartbeat_thread(ser):
+def heartbeat_thread(ser: serial.Serial):
     while True:
         try:
             ser.write(b"HB\n")  # Send heartbeat
@@ -40,14 +40,21 @@ try:
         if ser.in_waiting > 0:
             data = ser.readline().decode("utf-8").strip()
             data_list = data.split(" ")
-            # print(data_list)
-            
-            if not data_list:  #for empty data like "" or " ".
+             
+            if len(data_list) == 0:  #for empty data like "" or " ".
                 continue
+            
+            print("DATA:", data)
 
             rfid_mode = data_list[0]
             card_uid_list = data_list[1:]
             card_uid_str = ' '.join(card_uid_list)
+            print("card_uid_str: ", card_uid_str)
+            
+            if card_uid_str == "HB":
+                continue
+            
+            print(f"Received STM32: {"SAVE" if rfid_mode == "1" else "READ"} {card_uid_str}") 
 
             if rfid_mode == "1":
                 # SAVE
@@ -58,7 +65,6 @@ try:
             else:
                 pass
             # print(data_list)
-            print(f"{data}")
         time.sleep(0.1)
 except KeyboardInterrupt:
     print("Stopped by user")
