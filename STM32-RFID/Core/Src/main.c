@@ -27,6 +27,7 @@
 
 #include "defines.h"
 #include "MFRC522.h"
+#include "i2c-lcd.h"
 
 /* USER CODE END Includes */
 
@@ -46,7 +47,12 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+I2C_HandleTypeDef hi2c1;
+
 SPI_HandleTypeDef hspi1;
+
+UART_HandleTypeDef huart1;
+UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 
@@ -56,6 +62,9 @@ SPI_HandleTypeDef hspi1;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_SPI1_Init(void);
+static void MX_USART1_UART_Init(void);
+static void MX_I2C1_Init(void);
+static void MX_USART2_UART_Init(void);
 void MX_USB_HOST_Process(void);
 
 /* USER CODE BEGIN PFP */
@@ -69,7 +78,8 @@ void MX_USB_HOST_Process(void);
 MFRC522_Status_t status;
 uint8_t CardUID[4];
 
-uint8_t LastCardUID[4];
+uint8_t TempCardUID[4];
+char TempCardHexStr[12];
 char LastCardHexStr[12];
 
 // RFID MODULE SETTINGS
@@ -141,8 +151,13 @@ int main(void) {
 	MX_GPIO_Init();
 	MX_SPI1_Init();
 	MX_USB_HOST_Init();
+	MX_USART1_UART_Init();
+	MX_I2C1_Init();
+	MX_USART2_UART_Init();
 	/* USER CODE BEGIN 2 */
 	MFRC522_Init();
+	lcd_init();
+	lcd_clear();
 
 	HAL_GPIO_WritePin(STM_LED_PORT, SERIAL_PENGING_LED_PIN, GPIO_PIN_SET);
 	// Serial communication
@@ -158,12 +173,25 @@ int main(void) {
 		if (status == MI_OK) {
 			//Card detected
 			status = MFRC522_Anticoll(CardUID);
-			memcpy(LastCardUID, CardUID, sizeof(CardUID));
-			sprintf(LastCardHexStr, "%02X %02X %02X %02X", LastCardUID[0],
-					LastCardUID[1], LastCardUID[2], LastCardUID[3]);
+			memcpy(TempCardUID, CardUID, sizeof(CardUID));
+			sprintf(TempCardHexStr, "%02X %02X %02X %02X", TempCardUID[0],
+					TempCardUID[1], TempCardUID[2], TempCardUID[3]);
+
+			if (strcmp(LastCardHexStr, TempCardHexStr) == 0) {
+				continue;
+			}
+
+			strcpy(LastCardHexStr, TempCardHexStr);
 
 			Beep();
-			HAL_Delay(500);
+
+			lcd_clear();
+			lcd_put_cur(0, 0);
+			lcd_send_string("CARD UID:");
+			lcd_put_cur(1, 0);
+			lcd_send_string(TempCardHexStr);
+
+			HAL_Delay(750);
 
 		}
 		MFRC522_Halt();
@@ -219,6 +247,38 @@ void SystemClock_Config(void) {
 }
 
 /**
+ * @brief I2C1 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_I2C1_Init(void) {
+
+	/* USER CODE BEGIN I2C1_Init 0 */
+
+	/* USER CODE END I2C1_Init 0 */
+
+	/* USER CODE BEGIN I2C1_Init 1 */
+
+	/* USER CODE END I2C1_Init 1 */
+	hi2c1.Instance = I2C1;
+	hi2c1.Init.ClockSpeed = 100000;
+	hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
+	hi2c1.Init.OwnAddress1 = 0;
+	hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+	hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+	hi2c1.Init.OwnAddress2 = 0;
+	hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+	hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+	if (HAL_I2C_Init(&hi2c1) != HAL_OK) {
+		Error_Handler();
+	}
+	/* USER CODE BEGIN I2C1_Init 2 */
+
+	/* USER CODE END I2C1_Init 2 */
+
+}
+
+/**
  * @brief SPI1 Initialization Function
  * @param None
  * @retval None
@@ -255,6 +315,68 @@ static void MX_SPI1_Init(void) {
 }
 
 /**
+ * @brief USART1 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_USART1_UART_Init(void) {
+
+	/* USER CODE BEGIN USART1_Init 0 */
+
+	/* USER CODE END USART1_Init 0 */
+
+	/* USER CODE BEGIN USART1_Init 1 */
+
+	/* USER CODE END USART1_Init 1 */
+	huart1.Instance = USART1;
+	huart1.Init.BaudRate = 115200;
+	huart1.Init.WordLength = UART_WORDLENGTH_8B;
+	huart1.Init.StopBits = UART_STOPBITS_1;
+	huart1.Init.Parity = UART_PARITY_NONE;
+	huart1.Init.Mode = UART_MODE_TX_RX;
+	huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+	huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+	if (HAL_UART_Init(&huart1) != HAL_OK) {
+		Error_Handler();
+	}
+	/* USER CODE BEGIN USART1_Init 2 */
+
+	/* USER CODE END USART1_Init 2 */
+
+}
+
+/**
+ * @brief USART2 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_USART2_UART_Init(void) {
+
+	/* USER CODE BEGIN USART2_Init 0 */
+
+	/* USER CODE END USART2_Init 0 */
+
+	/* USER CODE BEGIN USART2_Init 1 */
+
+	/* USER CODE END USART2_Init 1 */
+	huart2.Instance = USART2;
+	huart2.Init.BaudRate = 115200;
+	huart2.Init.WordLength = UART_WORDLENGTH_8B;
+	huart2.Init.StopBits = UART_STOPBITS_1;
+	huart2.Init.Parity = UART_PARITY_NONE;
+	huart2.Init.Mode = UART_MODE_TX_RX;
+	huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+	huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+	if (HAL_UART_Init(&huart2) != HAL_OK) {
+		Error_Handler();
+	}
+	/* USER CODE BEGIN USART2_Init 2 */
+
+	/* USER CODE END USART2_Init 2 */
+
+}
+
+/**
  * @brief GPIO Initialization Function
  * @param None
  * @retval None
@@ -281,11 +403,12 @@ static void MX_GPIO_Init(void) {
 			GPIO_PIN_SET);
 
 	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(BUZZER_OUTPUT_GPIO_Port, BUZZER_OUTPUT_Pin,
+			GPIO_PIN_RESET);
 
 	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(GPIOD,
-			LD4_Pin | LD3_Pin | LD5_Pin | LD6_Pin | Audio_RST_Pin | RFID_SDA_Pin,
+	LD4_Pin | LD3_Pin | LD5_Pin | LD6_Pin | Audio_RST_Pin | RFID_SDA_Pin,
 			GPIO_PIN_RESET);
 
 	/*Configure GPIO pin : CS_I2C_SPI_Pin */
@@ -338,12 +461,12 @@ static void MX_GPIO_Init(void) {
 	GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
 	HAL_GPIO_Init(CLK_IN_GPIO_Port, &GPIO_InitStruct);
 
-	/*Configure GPIO pin : PB15 */
-	GPIO_InitStruct.Pin = GPIO_PIN_15;
+	/*Configure GPIO pin : BUZZER_OUTPUT_Pin */
+	GPIO_InitStruct.Pin = BUZZER_OUTPUT_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-	HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+	HAL_GPIO_Init(BUZZER_OUTPUT_GPIO_Port, &GPIO_InitStruct);
 
 	/*Configure GPIO pins : LD4_Pin LD3_Pin LD5_Pin LD6_Pin
 	 Audio_RST_Pin RFID_SDA_Pin */
@@ -367,14 +490,6 @@ static void MX_GPIO_Init(void) {
 	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(OTG_FS_OverCurrent_GPIO_Port, &GPIO_InitStruct);
-
-	/*Configure GPIO pin : Audio_SDA_Pin */
-	GPIO_InitStruct.Pin = Audio_SDA_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
-	GPIO_InitStruct.Pull = GPIO_PULLUP;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-	GPIO_InitStruct.Alternate = GPIO_AF4_I2C1;
-	HAL_GPIO_Init(Audio_SDA_GPIO_Port, &GPIO_InitStruct);
 
 	/*Configure GPIO pin : MEMS_INT2_Pin */
 	GPIO_InitStruct.Pin = MEMS_INT2_Pin;
