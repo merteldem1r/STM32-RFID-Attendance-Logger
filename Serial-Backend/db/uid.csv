@@ -1,4 +1,3 @@
-card_uid,user_name,user_id;;
-A1 56 F0 1D,,;;
-D8 12 F0 1D,,;ahsen;235
-;;
+card_uid,user_name,user_id
+A1 56 F0 1D,ahsen,220201014
+D8 12 F0 1D,mert,220201019
