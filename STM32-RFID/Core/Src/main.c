@@ -28,6 +28,7 @@
 #include "defines.h"
 #include "MFRC522.h"
 #include "i2c-lcd.h"
+#include "buzzer.h"
 
 /* USER CODE END Includes */
 
@@ -88,12 +89,6 @@ RFID_Mode Rfid_Mode = RFID_SAVE;
 // SERIAL COMMUNICATION STATUS & SETTINGS
 SERIAL_Status Serial_Status = SERIAL_PENDING;
 
-void Beep() {
-	HAL_GPIO_WritePin(BUZZER_PORT, BUZZER_PIN, GPIO_PIN_SET);
-	HAL_Delay(25);
-	HAL_GPIO_WritePin(BUZZER_PORT, BUZZER_PIN, GPIO_PIN_RESET);
-}
-
 // RFID Mode Operations
 void ToggleRfidMode() {
 	Rfid_Mode = (Rfid_Mode + 1) % 2;
@@ -117,6 +112,15 @@ void ResetAllLedsSTM() {
 	HAL_GPIO_WritePin(STM_LED_PORT, RFID_WRITE_LED_PIN, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(STM_LED_PORT, SERIAL_PENGING_LED_PIN, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(STM_LED_PORT, SERIAL_ERR_LED_PIN, GPIO_PIN_RESET);
+}
+
+// LCD
+
+void printWelcomeMessage() {
+	lcd_put_cur(0, 0);
+	lcd_send_string("STM32-RF AT LOG");
+	lcd_put_cur(1, 0);
+	lcd_send_string("by MERT & AHSEN");
 }
 
 /* USER CODE END 0 */
@@ -154,12 +158,16 @@ int main(void) {
 	MX_USART1_UART_Init();
 	MX_I2C1_Init();
 	MX_USART2_UART_Init();
+
 	/* USER CODE BEGIN 2 */
+	HAL_UART_Init(&huart2);
 	MFRC522_Init();
 	lcd_init();
-	lcd_clear();
 
+	// FIRST START FUNCTIONS
+	printWelcomeMessage();
 	HAL_GPIO_WritePin(STM_LED_PORT, SERIAL_PENGING_LED_PIN, GPIO_PIN_SET);
+
 	// Serial communication
 
 	/* USER CODE END 2 */
@@ -174,6 +182,7 @@ int main(void) {
 			//Card detected
 			status = MFRC522_Anticoll(CardUID);
 			memcpy(TempCardUID, CardUID, sizeof(CardUID));
+
 			sprintf(TempCardHexStr, "%02X %02X %02X %02X", TempCardUID[0],
 					TempCardUID[1], TempCardUID[2], TempCardUID[3]);
 
@@ -182,6 +191,9 @@ int main(void) {
 			}
 
 			strcpy(LastCardHexStr, TempCardHexStr);
+
+			HAL_UART_Transmit(&huart2, (uint8_t*) TempCardHexStr,
+					strlen(TempCardHexStr), 10);
 
 			Beep();
 
