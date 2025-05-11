@@ -178,34 +178,37 @@ int main(void) {
 		// Check if card is presented
 		status = MFRC522_Request(PICC_REQIDL, CardUID);
 
-		if (status == MI_OK) {
-			//Card detected
-			status = MFRC522_Anticoll(CardUID);
-			memcpy(TempCardUID, CardUID, sizeof(CardUID));
-
-			sprintf(TempCardHexStr, "%02X %02X %02X %02X", TempCardUID[0],
-					TempCardUID[1], TempCardUID[2], TempCardUID[3]);
-
-			if (strcmp(LastCardHexStr, TempCardHexStr) == 0) {
-				continue;
-			}
-
-			strcpy(LastCardHexStr, TempCardHexStr);
-
-			HAL_UART_Transmit(&huart2, (uint8_t*) TempCardHexStr,
-					strlen(TempCardHexStr), 10);
-
-			Beep();
-
-			lcd_clear();
-			lcd_put_cur(0, 0);
-			lcd_send_string("CARD UID:");
-			lcd_put_cur(1, 0);
-			lcd_send_string(TempCardHexStr);
-
-			HAL_Delay(750);
-
+		if (status != MI_OK) {
+			continue;
 		}
+
+		//Card detected
+		status = MFRC522_Anticoll(CardUID);
+		memcpy(TempCardUID, CardUID, sizeof(CardUID));
+
+		sprintf(TempCardHexStr, "%02X %02X %02X %02X", TempCardUID[0],
+				TempCardUID[1], TempCardUID[2], TempCardUID[3]);
+
+		// if new card not detected
+		if (strcmp(LastCardHexStr, TempCardHexStr) == 0) {
+			continue;
+		}
+
+		strcpy(LastCardHexStr, TempCardHexStr);
+
+		HAL_UART_Transmit(&huart2, (uint8_t*) TempCardHexStr,
+				strlen(TempCardHexStr), 10);
+
+		Beep();
+
+		lcd_clear();
+		lcd_put_cur(0, 0);
+		lcd_send_string("CARD UID:");
+		lcd_put_cur(1, 0);
+		lcd_send_string(TempCardHexStr);
+
+		HAL_Delay(750);
+
 		MFRC522_Halt();
 
 		/* USER CODE END WHILE */
