@@ -68,6 +68,8 @@ void MX_USB_HOST_Process(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+uint8_t HEARTBIT_CODE[] = { 'H', 'B' };
+
 // MFRC522 GLOBAL VARIABLES
 MFRC522_Status_t status;
 uint8_t CardUID[5];
@@ -76,10 +78,9 @@ uint8_t TempCardUID[4];
 char TempCardHexStr[12];
 char LastCardHexStr[12];
 
-int timer = 0;
-
 // RFID MODULE SETTINGS
 RFID_Mode Rfid_Mode = RFID_READ;
+uint8_t isRfidModeBtnPressed = 0;
 
 // SERIAL COMMUNICATION STATUS & SETTINGS
 SERIAL_Status Serial_Status = SERIAL_PENDING;
@@ -112,20 +113,22 @@ void ToggleRfidMode() {
 }
 
 void WaitStartupHeartbitSerial() {
-	uint8_t buffer[10];
+	uint8_t buffer[2];
 	int startTime = HAL_GetTick();
 	uint8_t remainingSec = 9;
 
 	while ((HAL_GetTick() - startTime) < 10000) {
 		if (HAL_UART_Receive(&huart2, buffer, sizeof(buffer), 100) == HAL_OK) {
-			if (strcmp((char*) buffer, "HB") == 0) {
+			if (memcmp(HEARTBIT_CODE, buffer, sizeof(HEARTBIT_CODE)) == 0) {
 				Serial_Status = SERIAL_OK;
-				break;
+				ResetAllLedsSTM();
+				SetRfidModeLED();
+				printRfidModeMessage(Rfid_Mode);
+				return;
 			}
 		}
 
 		printSerialWaitingTimer(remainingSec);
-		timer = (HAL_GetTick() - startTime);
 		remainingSec = 9 - ((HAL_GetTick() - startTime) / 1000);
 	}
 
@@ -139,6 +142,8 @@ void WaitStartupHeartbitSerial() {
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	if (GPIO_Pin == GPIO_PIN_0) {
 		ToggleRfidMode();
+		printRfidModeMessage(Rfid_Mode);
+		isRfidModeBtnPressed = 1;
 	}
 }
 
@@ -201,6 +206,11 @@ int main(void) {
 	while (1) {
 		if (Serial_Status != SERIAL_OK) {
 			continue;
+		}
+
+		if (isRfidModeBtnPressed == 1) {
+			HAL_Delay(200);
+			isRfidModeBtnPressed = 0;
 		}
 
 		// Check if card is presented

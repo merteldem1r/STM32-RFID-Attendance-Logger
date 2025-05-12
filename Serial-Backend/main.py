@@ -6,9 +6,8 @@ import threading
 
 ser = serial.Serial("/dev/tty.usbserial-B0044FJ3")
 ser.baudrate = 115200
-print(ser.name)
+print("Serial PORT: ", ser.name)
 
-# TO DO:
 # 1- when the programme first run check if db excel file exist (if not create db excel file)
 # 2- create serial communication with microcontroller
 # 3- create interval (2 seconds) of heartbeat to STM32
@@ -24,7 +23,7 @@ CSV_UTIL.Initialize_DB()
 def heartbeat_thread(ser: serial.Serial):
     while True:
         try:
-            ser.write(b"HB\n")  # Send heartbeat
+            ser.write(b"HB")  # Send heartbeat
             time.sleep(2)
         except Exception as e:
             print(f"Heartbeat thread error: {e}")

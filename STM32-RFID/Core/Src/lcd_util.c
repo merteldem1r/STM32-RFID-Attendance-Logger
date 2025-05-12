@@ -5,6 +5,7 @@
  *      Author: merteldem1r
  */
 
+#include "defines.h"
 #include "lcd_util.h"
 #include "stdio.h"
 
@@ -38,15 +39,35 @@ void printSerialWaitingMessage() {
 }
 
 void printSerialWaitingTimer(uint8_t remainSec) {
-	char timerBuffer[3];
+	char timerBuffer[4];
 	sprintf(timerBuffer, "%d", remainSec);
 	lcd_put_cur(1, 15);
 	lcd_send_string(timerBuffer);
 }
 
 void printSerialErrorMessage() {
+	lcd_clear();
 	lcd_put_cur(0, 0);
 	lcd_send_string("Serial failed");
 	lcd_put_cur(1, 0);
 	lcd_send_string("Press reset btn!");
+}
+
+void printRfidModeMessage(RFID_Mode rfid_mode) {
+	char msgBuffer[16];
+	char* rfidModeStr;
+
+	if (rfid_mode == RFID_READ) {
+		rfidModeStr = "READ";
+	} else {
+		rfidModeStr = "SAVE";
+	}
+
+	sprintf(msgBuffer, "RFID MODE: %s", rfidModeStr);
+
+	lcd_clear();
+	lcd_put_cur(0, 0);
+	lcd_send_string(msgBuffer);
+	lcd_put_cur(1, 0);
+	lcd_send_string("Put your card");
 }

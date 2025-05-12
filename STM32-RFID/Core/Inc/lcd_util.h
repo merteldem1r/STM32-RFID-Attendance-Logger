@@ -13,3 +13,4 @@ void printWelcomeMessage();
 void printSerialWaitingMessage();
 void printSerialWaitingTimer(uint8_t passedSec);
 void printSerialErrorMessage();
+void printRfidModeMessage(RFID_Mode rfid_mode);
