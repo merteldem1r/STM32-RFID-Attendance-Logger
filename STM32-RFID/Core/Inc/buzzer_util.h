@@ -5,9 +5,9 @@
  *      Author: merteldem1r
  */
 
-#ifndef INC_BUZZER_H_
-#define INC_BUZZER_H_
+#ifndef INC_BUZZER_UTIL_H_
+#define INC_BUZZER_UTIL_H_
 
 void Beep();
 
-#endif /* INC_BUZZER_H_ */
+#endif /* INC_BUZZER_UTIL_H_ */
