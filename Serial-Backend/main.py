@@ -1,11 +1,11 @@
 import serial
 from utils import csv_util as CSV_UTIL
 import time
-import threading 
+import threading
 
 
-ser = serial.Serial("/dev/cu.usbserial-10")
-ser.baudrate = 9600
+ser = serial.Serial("/dev/tty.usbserial-B0044FJ3")
+ser.baudrate = 115200
 print(ser.name)
 
 # TO DO:
@@ -29,7 +29,8 @@ def heartbeat_thread(ser: serial.Serial):
         except Exception as e:
             print(f"Heartbeat thread error: {e}")
             break
-        
+
+
 # Start heartbeat thread
 heartbeat = threading.Thread(target=heartbeat_thread, args=(ser,), daemon=True)
 heartbeat.start()
@@ -40,28 +41,29 @@ try:
         if ser.in_waiting > 0:
             data = ser.readline().decode("utf-8").strip()
             data_list = data.split(" ")
-             
-            if len(data_list) == 0:  #for empty data like "" or " ".
+
+            if len(data_list) == 0:  # for empty data like "" or " ".
                 continue
-            
+
             print("DATA:", data)
 
             rfid_mode = data_list[0]
             card_uid_list = data_list[1:]
             card_uid_str = ' '.join(card_uid_list)
             print("card_uid_str: ", card_uid_str)
-            
+
             if card_uid_str == "HB":
                 continue
-            
-            print(f"Received STM32: {"SAVE" if rfid_mode == "1" else "READ"} {card_uid_str}") 
+
+            print(
+                f"Received STM32: {"SAVE" if rfid_mode == "1" else "READ"} {card_uid_str}")
 
             if rfid_mode == "1":
                 # SAVE
                 CSV_UTIL.save_db(ser, card_uid_str)
             elif rfid_mode == "0":
                 # READ
-                CSV_UTIL.read_db(ser, card_uid_str)  
+                CSV_UTIL.read_db(ser, card_uid_str)
             else:
                 pass
             # print(data_list)
