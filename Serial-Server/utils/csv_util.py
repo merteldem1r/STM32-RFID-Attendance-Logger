@@ -76,7 +76,8 @@ def read_db(ser: serial.Serial, card_uid_str: str):
         user_id = str(round(row["user_id"])).strip() if pd.notna(row["user_id"]) else ""
         
         message_toSend = f"{user_name}-{user_id}\n"
-        attendance_lists_util.update_attendance_list(card_uid_str = card_uid_str, user_name = {user_name}, user_id = {user_id})
+        
+        attendance_lists_util.update_attendance_list(card_uid_str = card_uid_str, user_name = user_name, user_id = user_id)
 
         if not user_name and not user_id:
             message_toSend = "ERR\n"
