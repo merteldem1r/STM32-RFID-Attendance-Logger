@@ -4,7 +4,7 @@ import time
 import threading
 
 
-ser = serial.Serial("/dev/tty.usbserial-B0044FJ3")
+ser = serial.Serial("/dev/tty.usbserial-10")
 ser.baudrate = 9600
 print("Serial PORT: ", ser.name)
 

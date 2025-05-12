@@ -28,7 +28,7 @@ def update_attendance_list(card_uid_str: str, user_name, user_id):
     df = df.dropna(how="all")
 
     if card_uid_str not in df["card_uid"].values:
-        counter = 1
+        counter = 0
         new_row = pd.DataFrame([{
             "card_uid": card_uid_str,
             "user_name": f"{user_name}",
@@ -40,6 +40,6 @@ def update_attendance_list(card_uid_str: str, user_name, user_id):
         df.to_csv(PATH_AL, index=False)
         
     if card_uid_str in df["card_uid"].values:
-        counter += 1
-        df.xs(card_uid_str)["total_reads"] = counter
-        df.xs(card_uid_str)["last_log_date"] = current_time_full_day
+        df.loc[df["card_uid"] == card_uid_str, "total_reads"] += 1
+        df.loc[df["card_uid"] == card_uid_str, "last_log_date"] = current_time_full_day
+        df.to_csv(PATH_AL, index=False)
