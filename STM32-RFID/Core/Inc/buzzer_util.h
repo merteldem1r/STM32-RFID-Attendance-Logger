@@ -9,5 +9,7 @@
 #define INC_BUZZER_UTIL_H_
 
 void Beep();
+void SerialErrBeep();
+void SerialOkBeep();
 
 #endif /* INC_BUZZER_UTIL_H_ */

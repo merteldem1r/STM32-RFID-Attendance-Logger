@@ -119,11 +119,13 @@ void WaitStartupHeartbitSerial() {
 
 	while ((HAL_GetTick() - startTime) < 10000) {
 		if (HAL_UART_Receive(&huart2, buffer, sizeof(buffer), 100) == HAL_OK) {
+			// HB received
 			if (memcmp(HEARTBIT_CODE, buffer, sizeof(HEARTBIT_CODE)) == 0) {
 				Serial_Status = SERIAL_OK;
 				ResetAllLedsSTM();
 				SetRfidModeLED();
 				printRfidModeMessage(Rfid_Mode);
+				SerialOkBeep();
 				return;
 			}
 		}
@@ -132,15 +134,17 @@ void WaitStartupHeartbitSerial() {
 		remainingSec = 9 - ((HAL_GetTick() - startTime) / 1000);
 	}
 
+	// Set ERROR STATE
 	Serial_Status = SERIAL_ERR;
 	ResetAllLedsSTM();
 	HAL_GPIO_WritePin(STM_LED_PORT, SERIAL_ERR_LED_PIN, GPIO_PIN_SET);
 	printSerialErrorMessage();
+	SerialErrBeep();
 }
 
 // INTERRUPTS
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-	if (GPIO_Pin == GPIO_PIN_0) {
+	if (GPIO_Pin == GPIO_PIN_0 && Serial_Status == SERIAL_OK) {
 		ToggleRfidMode();
 		printRfidModeMessage(Rfid_Mode);
 		isRfidModeBtnPressed = 1;
