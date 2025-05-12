@@ -1,16 +1,18 @@
 import serial
 import pandas as pd
 import os
+import time
+from utils import attendance_lists_util
 
-PATH = "./db/uid.csv"
+PATH_DB = "./db/uid.csv"
 
 
 def Initialize_DB():
-    if not os.path.exists(PATH) or os.stat(PATH).st_size == 0:
+    if not os.PATH_DB.exists(PATH_DB) or os.stat(PATH_DB).st_size == 0:
         field_names = ["card_uid", "user_name", "user_id"]
         df = pd.DataFrame(columns=field_names)
         os.makedirs("./db", exist_ok=True)
-        df.to_csv(PATH, index=False)
+        df.to_csv(PATH_DB, index=False)
 
 
 def send_message(ser: serial.Serial, message: str):
@@ -20,32 +22,32 @@ def send_message(ser: serial.Serial, message: str):
 def fix_csv_if_broken():
     expected_columns = ["card_uid", "user_name", "user_id"]
 
-    if not os.path.exists(PATH) or os.stat(PATH).st_size == 0:
+    if not os.PATH_DB.exists(PATH_DB) or os.stat(PATH_DB).st_size == 0:
         print("CSV is empty or missing. Wait fot reinitializing.")
         Initialize_DB()
         return
 
     # try:
-    #     df = pd.read_csv(PATH, sep=",", engine="python")
+    #     df = pd.read_csv(PATH_DB, sep=",", engine="python")
     # except pd.errors.EmptyDataError:
     #     print("CSV is empty. Wait fot reinitializing.")
     #     Initialize_DB()
     #     return
 
-    df = pd.read_csv(PATH, sep=",", engine="python")
+    df = pd.read_csv(PATH_DB, sep=",", engine="python")
 
     for ex_col in expected_columns:
         if not ex_col in df.columns:
             print("CSV header is invalid. Wait for fixing.")
             df.columns = expected_columns
-            df.to_csv(PATH, index=False)
+            df.to_csv(PATH_DB, index=False)
             break
 
 
 def save_db(ser: serial.Serial, card_uid_str: str):
     fix_csv_if_broken()
 
-    df = pd.read_csv(PATH, sep=",", engine="python")
+    df = pd.read_csv(PATH_DB, sep=",", engine="python")
     df = df.dropna(how="all")
 
     if card_uid_str not in df["card_uid"].values:
@@ -55,15 +57,16 @@ def save_db(ser: serial.Serial, card_uid_str: str):
             "user_id": ""
         }])
         df = pd.concat([df, new_row], ignore_index=True)
-        df.to_csv(PATH, index=False)
+        df.to_csv(PATH_DB, index=False)
         message_toSend = "OK\n"
         send_message(ser, message_toSend)
 
 
 def read_db(ser: serial.Serial, card_uid_str: str):
     fix_csv_if_broken()
+    attendance_lists_util.create_attendance_list()
 
-    df = pd.read_csv(PATH, sep=",", engine="python")
+    df = pd.read_csv(PATH_DB, sep=",", engine="python")
     df = df.dropna(how="all")
 
     if card_uid_str in df["card_uid"].values:
@@ -82,5 +85,8 @@ def read_db(ser: serial.Serial, card_uid_str: str):
 
     print(f"Sending to STM32: {message_toSend.strip()}")
     send_message(ser, message_toSend)
+    
+    attendance_lists_util.update_attendance_list(card_uid_str= str, user_name= user_name, user_id= user_id)
+    
     
     

@@ -5,7 +5,7 @@ import threading
 
 
 ser = serial.Serial("/dev/tty.usbserial-B0044FJ3")
-ser.baudrate = 115200
+ser.baudrate = 9600
 print("Serial PORT: ", ser.name)
 
 # 1- when the programme first run check if db excel file exist (if not create db excel file)
