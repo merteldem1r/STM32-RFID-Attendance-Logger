@@ -14,11 +14,14 @@ print("Serial PORT: ", ser.name)
 # connected. errorhandling
 # 4- wait messages from STM32:
 #       4.1- SAVE: save the card UID to db.csv, send "OK " message to STM32 (is it longer than 4 bytes)
-#       4.2- READ: check from db if user exist, if exist send user info (e.g. "Mert Eldemir-220201019")
-#                                if NOT exist send "ERR" message to STM32
+#       4.2- READ: 4.2.1: check from db if user exist, if exist send user info (e.g. "Mert Eldemir-220201019") if NOT exist send "ERR" message to STM32
+#                  4.2.2: on startup create attendance-lists folder with curremt date .csv (e.g. 12-05-2025.csv) (new headers: card_uid,user_name,user_id,last_log_date,total_reads)
+#                  4.2.3: after sending user_name and user_id to the STM32 update the attendance-list
+
 
 CSV_UTIL.Initialize_DB()
 
+# deep researche about below code (especially abouy Threads)
 
 def heartbeat_thread(ser: serial.Serial):
     while True:

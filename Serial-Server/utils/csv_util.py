@@ -82,3 +82,5 @@ def read_db(ser: serial.Serial, card_uid_str: str):
 
     print(f"Sending to STM32: {message_toSend.strip()}")
     send_message(ser, message_toSend)
+    
+    
