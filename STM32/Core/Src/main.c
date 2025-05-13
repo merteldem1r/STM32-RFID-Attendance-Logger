@@ -68,8 +68,6 @@ void MX_USB_HOST_Process(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-uint8_t HEARTBEAT_CODE[] = { 'H', 'B' };
-
 // MFRC522 GLOBAL VARIABLES
 MFRC522_Status_t status;
 uint8_t CardUID[5];
@@ -78,40 +76,22 @@ uint8_t TempCardUID[4];
 char TempCardHexStr[12];
 char LastCardHexStr[12];
 
-char SerialSendStr[14];
+// RFID MODE & SERIAL STATUS settings
+SERIAL_Status Serial_Status = SERIAL_PENDING;
 
 // RFID MODULE SETTINGS
 RFID_Mode Rfid_Mode = RFID_READ;
 uint8_t isRfidModeBtnPressed = 0;
 
-// SERIAL COMMUNICATION STATUS & SETTINGS
-SERIAL_Status Serial_Status = SERIAL_PENDING;
+uint8_t HEARTBEAT_CODE[] = { 'H', 'B' };
 
-// RFID Mode Operations
-void SetRfidModeLED() {
-	if (Rfid_Mode == RFID_SAVE) {
-		HAL_GPIO_WritePin(STM_LED_PORT, RFID_SAVE_LED_PIN, GPIO_PIN_SET);
-	} else if (Rfid_Mode == RFID_READ) {
-		HAL_GPIO_WritePin(STM_LED_PORT, RFID_READ_LED_PIN, GPIO_PIN_SET);
-	}
-}
+void ResetAllLedsSTM();
 
-// Reset RFID Mode & SERIAL Status LEDS
-void ResetAllLedsSTM() {
-	HAL_GPIO_WritePin(STM_LED_PORT, RFID_READ_LED_PIN, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(STM_LED_PORT, RFID_SAVE_LED_PIN, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(STM_LED_PORT, SERIAL_PENGING_LED_PIN, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(STM_LED_PORT, SERIAL_ERR_LED_PIN, GPIO_PIN_RESET);
-}
-
-void ToggleRfidMode() {
-	if (Serial_Status != SERIAL_OK) {
-		return;
-	}
-
-	Rfid_Mode = (Rfid_Mode + 1) % 2;
-	ResetAllLedsSTM();
-	SetRfidModeLED();
+// PROGRAM SERIAL STATES
+void SetSerialPengingState() {
+	Serial_Status = SERIAL_PENDING;
+	HAL_GPIO_WritePin(STM_LED_PORT, SERIAL_PENGING_LED_PIN, GPIO_PIN_SET);
+	printSerialWaitingMessage();
 }
 
 void SetSerialErrorState() {
@@ -152,6 +132,32 @@ void WaitStartupHeartbeatSerial() {
 	// SetSerialErrorState();
 	SetSerialOkayState();
 
+}
+
+// RFID Mode Operations
+void SetRfidModeLED() {
+	if (Rfid_Mode == RFID_SAVE) {
+		HAL_GPIO_WritePin(STM_LED_PORT, RFID_SAVE_LED_PIN, GPIO_PIN_SET);
+	} else if (Rfid_Mode == RFID_READ) {
+		HAL_GPIO_WritePin(STM_LED_PORT, RFID_READ_LED_PIN, GPIO_PIN_SET);
+	}
+}
+
+void ResetAllLedsSTM() {
+	HAL_GPIO_WritePin(STM_LED_PORT, RFID_READ_LED_PIN, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(STM_LED_PORT, RFID_SAVE_LED_PIN, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(STM_LED_PORT, SERIAL_PENGING_LED_PIN, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(STM_LED_PORT, SERIAL_ERR_LED_PIN, GPIO_PIN_RESET);
+}
+
+void ToggleRfidMode() {
+	if (Serial_Status != SERIAL_OK) {
+		return;
+	}
+
+	Rfid_Mode = (Rfid_Mode + 1) % 2;
+	ResetAllLedsSTM();
+	SetRfidModeLED();
 }
 
 // INTERRUPTS
@@ -201,23 +207,23 @@ int main(void) {
 
 	/* USER CODE BEGIN 2 */
 	HAL_UART_Init(&huart2);
-	MFRC522_Init();
-	lcd_init();
+	MFRC522_Init(); 		// RFID Module
+	lcd_init(); 			// LCD Module
 
 	// FIRST STARTUP FUNCTIONS
 	printWelcomeMessage();
 	HAL_Delay(2000);
 
-	printSerialWaitingMessage();
-	HAL_GPIO_WritePin(STM_LED_PORT, SERIAL_PENGING_LED_PIN, GPIO_PIN_SET);
-
+	// start Heartbeat receive handler before run the main program
+	SetSerialPengingState();
 	WaitStartupHeartbeatSerial();
 
-	// Serial communication
+	// int main() variables
 
 	// e.g. str = 1 D6 97 71 AF rfidModePrefix = "1" -> SAVE
 	// e.g. str = 0 D6 97 71 AF rfidModePrefix = "0" -> READ
-	char rfidModePrefix[2];
+	char SerialSendStr[14];
+	char rfidModePrefix[2]; // "1 " -> SAVE | "0 " -> READ
 
 	/* USER CODE END 2 */
 
@@ -229,7 +235,7 @@ int main(void) {
 		}
 
 		if (isRfidModeBtnPressed == 1) {
-			memset(LastCardHexStr, 0, sizeof(LastCardHexStr));
+			memset(LastCardHexStr, 0, sizeof(LastCardHexStr)); // Reset last read UID
 			HAL_Delay(200);
 			isRfidModeBtnPressed = 0;
 		}
@@ -249,12 +255,12 @@ int main(void) {
 
 			strcpy(LastCardHexStr, TempCardHexStr);
 
+			// prepare string to send via UART
 			if (Rfid_Mode == RFID_READ) {
 				rfidModePrefix[0] = '0';
 			} else if (Rfid_Mode == RFID_SAVE) {
 				rfidModePrefix[0] = '1';
 			}
-
 			rfidModePrefix[1] = ' ';
 
 			snprintf(SerialSendStr, sizeof(SerialSendStr), "%s%s",
@@ -264,7 +270,6 @@ int main(void) {
 					strlen(SerialSendStr), 10000);
 
 			Beep();
-
 			lcd_clear();
 			lcd_put_cur(0, 0);
 			lcd_send_string("CARD UID:");

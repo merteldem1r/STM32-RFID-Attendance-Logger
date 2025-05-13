@@ -55,7 +55,7 @@ void printSerialErrorMessage() {
 
 void printRfidModeMessage(RFID_Mode rfid_mode) {
 	char msgBuffer[16];
-	char* rfidModeStr;
+	char *rfidModeStr;
 
 	if (rfid_mode == RFID_READ) {
 		rfidModeStr = "READ";
@@ -63,7 +63,7 @@ void printRfidModeMessage(RFID_Mode rfid_mode) {
 		rfidModeStr = "SAVE";
 	}
 
-	sprintf(msgBuffer, "RFID MODE: %s", rfidModeStr);
+	sprintf(msgBuffer, "RFID Mode: %s", rfidModeStr);
 
 	lcd_clear();
 	lcd_put_cur(0, 0);
