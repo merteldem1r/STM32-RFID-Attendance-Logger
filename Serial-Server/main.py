@@ -3,13 +3,13 @@ from utils import csv_util as CSV_UTIL
 import time
 import threading
 
-#Arduino test
-ser = serial.Serial("/dev/tty.usbserial-10")
-ser.baudrate = 9600
+# Arduino test
+# ser = serial.Serial("/dev/tty.usbserial-10")
+# ser.baudrate = 9600
 
-#STM32
-# ser = serial.Serial("/dev/tty.usbserial-B0044FJ3")
-# ser.baudrate = 115200
+# STM32
+ser = serial.Serial("/dev/tty.usbserial-B0044FJ3")
+ser.baudrate = 115200
 print("Serial PORT: ", ser.name)
 
 # 1- when the programme first run check if db excel file exist (if not create db excel file)
@@ -29,11 +29,12 @@ CSV_UTIL.Initialize_DB()
 
 serial_lock = threading.Lock()
 
+
 def heartbeat_thread(ser: serial.Serial):
     while True:
         try:
             with serial_lock:
-                ser.write(b"HB\n")
+                ser.write(b"HB")
             time.sleep(2)
         except Exception as e:
             print(f"Heartbeat thread error: {e}")
@@ -54,25 +55,21 @@ try:
             if len(data_list) == 0:  # for empty data like "" or " ".
                 continue
 
-            print("DATA:", data)
-            
             if data == "HB":
                 continue
-
 
             rfid_mode = data_list[0]
             card_uid_list = data_list[1:]
             card_uid_str = ' '.join(card_uid_list)
-            print("card_uid_str: ", card_uid_str)
 
             # if card_uid_str == "HB":
             #     continue
-            
+
             if not card_uid_str or card_uid_str == "HB":
                 continue
 
             print(
-                f"Received STM32: {"SAVE" if rfid_mode == "1" else "READ"} {card_uid_str}")
+                f"Received from STM32: {"SAVE" if rfid_mode == "1" else "READ"} {card_uid_str}")
 
             if rfid_mode == "1":
                 # SAVE

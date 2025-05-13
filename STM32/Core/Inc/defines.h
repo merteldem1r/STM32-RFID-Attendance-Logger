@@ -29,6 +29,8 @@
 #define SERIAL_PENGING_LED_PIN				GPIO_PIN_13 // ORANGE LED
 #define SERIAL_ERR_LED_PIN					GPIO_PIN_14 // RED LED
 
+#define HEARTBEAT_TIMEOUT_MS				5000
+
 // RFID Types
 
 typedef enum {

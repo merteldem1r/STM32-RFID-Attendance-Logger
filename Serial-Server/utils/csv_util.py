@@ -15,7 +15,7 @@ def Initialize_DB():
         os.makedirs("./db", exist_ok=True)
         df.to_csv(PATH_DB, index=False)
 
-    
+
 def send_message(ser: serial.Serial, message: str, lock: threading.Lock = None):
     if lock:
         with lock:
@@ -49,7 +49,7 @@ def fix_csv_if_broken():
             break
 
 
-def save_db(ser: serial.Serial, card_uid_str: str, lock= None):
+def save_db(ser: serial.Serial, card_uid_str: str, lock=None):
     fix_csv_if_broken()
 
     df = pd.read_csv(PATH_DB, sep=",", engine="python")
@@ -63,7 +63,7 @@ def save_db(ser: serial.Serial, card_uid_str: str, lock= None):
         }])
         df = pd.concat([df, new_row], ignore_index=True)
         df.to_csv(PATH_DB, index=False)
-        message_toSend = "OK\n"
+        message_toSend = "OK"
         send_message(ser, message_toSend, lock)
 
 
@@ -76,23 +76,23 @@ def read_db(ser: serial.Serial, card_uid_str: str, lock=None):
 
     if card_uid_str in df["card_uid"].values:
         row = df[df["card_uid"] == card_uid_str].iloc[0]
-        
-        user_name = str(row["user_name"]).strip() if pd.notna(row["user_name"]) else ""
-        user_id = str(round(row["user_id"])).strip() if pd.notna(row["user_id"]) else ""
-        
-        message_toSend = f"{user_name}-{user_id}\n"
-        
-        attendance_lists_util.update_attendance_list(card_uid_str = card_uid_str, user_name = user_name, user_id = user_id)
+
+        user_name = str(row["user_name"]).strip(
+        ) if pd.notna(row["user_name"]) else ""
+        user_id = str(round(row["user_id"])).strip(
+        ) if pd.notna(row["user_id"]) else ""
+
+        message_toSend = f"{user_name}-{user_id}"
+        print("Send to STM32: ", message_toSend)
+
+        attendance_lists_util.update_attendance_list(
+            card_uid_str=card_uid_str, user_name=user_name, user_id=user_id)
 
         if not user_name and not user_id:
-            message_toSend = "ERR\n"
+            message_toSend = "ERR"
 
     else:
-        message_toSend = "ERR\n"
+        message_toSend = "ERR"
 
     print(f"Sending to STM32: {message_toSend.strip()}")
     send_message(ser, message_toSend, lock)
-    
-    
-    
-    
