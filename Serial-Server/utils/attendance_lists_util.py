@@ -3,7 +3,7 @@ import pandas as pd
 import os
 
 time_in_secs = time.time()
-current_time_full_day = time.ctime(time_in_secs)
+# current_time_full_day = time.ctime(time_in_secs)
 current_day = time.strftime("%d", time.gmtime(time_in_secs))
 current_month = time.strftime("%b", time.gmtime(time_in_secs))
 current_year = time.strftime("%Y", time.gmtime(time_in_secs))
@@ -26,19 +26,21 @@ def update_attendance_list(card_uid_str: str, user_name, user_id):
     df = pd.read_csv(PATH_AL, sep=",", engine="python")
     df = df.dropna(how="all")
 
+    new_time = time.ctime(time.time())
+    
     if card_uid_str not in df["card_uid"].values:
-        counter = 0
         new_row = pd.DataFrame([{
             "card_uid": card_uid_str,
             "user_name": f"{user_name}",
             "user_id": f"{user_id}",
-            "last_log_date": f"{current_time_full_day}", 
-            "total_reads": counter
+            "last_log_date": current_time_full_day, 
+            "total_reads": 0
         }])
         df = pd.concat([df, new_row], ignore_index=True)
         df.to_csv(PATH_AL, index=False)
         
     if card_uid_str in df["card_uid"].values:
+        current_time_full_day = time.ctime(time_in_secs)
         df.loc[df["card_uid"] == card_uid_str, "total_reads"] += 1
-        df.loc[df["card_uid"] == card_uid_str, "last_log_date"] = current_time_full_day
+        df.loc[df["card_uid"] == card_uid_str, "last_log_date"] = new_time
         df.to_csv(PATH_AL, index=False)
