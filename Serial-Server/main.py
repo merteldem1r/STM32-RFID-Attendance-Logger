@@ -44,7 +44,7 @@ heartbeat.start()
 try:
     while True:
         if ser.in_waiting > 0:
-            data = ser.readline().decode("utf-8").strip()
+            data = ser.read_all().decode("utf-8").strip()
             data_list = data.split(" ")
 
             if len(data_list) == 0:  # for empty data like "" or " ".
