@@ -68,7 +68,7 @@ void MX_USB_HOST_Process(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-uint8_t HEARTBIT_CODE[] = { 'H', 'B' };
+uint8_t HEARTBEAT_CODE[] = { 'H', 'B' };
 
 // MFRC522 GLOBAL VARIABLES
 MFRC522_Status_t status;
@@ -77,6 +77,8 @@ uint8_t CardUID[5];
 uint8_t TempCardUID[4];
 char TempCardHexStr[12];
 char LastCardHexStr[12];
+
+char SerialSendStr[14];
 
 // RFID MODULE SETTINGS
 RFID_Mode Rfid_Mode = RFID_READ;
@@ -112,7 +114,23 @@ void ToggleRfidMode() {
 	SetRfidModeLED();
 }
 
-void WaitStartupHeartbitSerial() {
+void SetSerialErrorState() {
+	Serial_Status = SERIAL_ERR;
+	ResetAllLedsSTM();
+	HAL_GPIO_WritePin(STM_LED_PORT, SERIAL_ERR_LED_PIN, GPIO_PIN_SET);
+	printSerialErrorMessage();
+	SerialErrBeep();
+}
+
+void SetSerialOkayState() {
+	Serial_Status = SERIAL_OK;
+	ResetAllLedsSTM();
+	SetRfidModeLED();
+	printRfidModeMessage(Rfid_Mode);
+	SerialOkBeep();
+}
+
+void WaitStartupHeartbeatSerial() {
 	uint8_t buffer[2];
 	int startTime = HAL_GetTick();
 	uint8_t remainingSec = 9;
@@ -120,12 +138,8 @@ void WaitStartupHeartbitSerial() {
 	while ((HAL_GetTick() - startTime) < 10000) {
 		if (HAL_UART_Receive(&huart2, buffer, sizeof(buffer), 100) == HAL_OK) {
 			// HB received
-			if (memcmp(HEARTBIT_CODE, buffer, sizeof(HEARTBIT_CODE)) == 0) {
-				Serial_Status = SERIAL_OK;
-				ResetAllLedsSTM();
-				SetRfidModeLED();
-				printRfidModeMessage(Rfid_Mode);
-				SerialOkBeep();
+			if (memcmp(HEARTBEAT_CODE, buffer, sizeof(HEARTBEAT_CODE)) == 0) {
+				SetSerialOkayState();
 				return;
 			}
 		}
@@ -134,12 +148,10 @@ void WaitStartupHeartbitSerial() {
 		remainingSec = 9 - ((HAL_GetTick() - startTime) / 1000);
 	}
 
-	// Set ERROR STATE
-	Serial_Status = SERIAL_ERR;
-	ResetAllLedsSTM();
-	HAL_GPIO_WritePin(STM_LED_PORT, SERIAL_ERR_LED_PIN, GPIO_PIN_SET);
-	printSerialErrorMessage();
-	SerialErrBeep();
+	// No HB found
+	// SetSerialErrorState();
+	SetSerialOkayState();
+
 }
 
 // INTERRUPTS
@@ -199,9 +211,13 @@ int main(void) {
 	printSerialWaitingMessage();
 	HAL_GPIO_WritePin(STM_LED_PORT, SERIAL_PENGING_LED_PIN, GPIO_PIN_SET);
 
-	WaitStartupHeartbitSerial();
+	WaitStartupHeartbeatSerial();
 
 	// Serial communication
+
+	// e.g. str = 1 D6 97 71 AF rfidModePrefix = "1" -> SAVE
+	// e.g. str = 0 D6 97 71 AF rfidModePrefix = "0" -> READ
+	char rfidModePrefix[2];
 
 	/* USER CODE END 2 */
 
@@ -213,6 +229,7 @@ int main(void) {
 		}
 
 		if (isRfidModeBtnPressed == 1) {
+			memset(LastCardHexStr, 0, sizeof(LastCardHexStr));
 			HAL_Delay(200);
 			isRfidModeBtnPressed = 0;
 		}
@@ -221,8 +238,9 @@ int main(void) {
 		if (MFRC522_Check(CardUID) == MI_OK) {
 			memcpy(TempCardUID, CardUID, 4);
 
-			sprintf(TempCardHexStr, "%02X %02X %02X %02X", TempCardUID[0],
-					TempCardUID[1], TempCardUID[2], TempCardUID[3]);
+			snprintf(TempCardHexStr, sizeof(TempCardHexStr),
+					"%02X %02X %02X %02X", TempCardUID[0], TempCardUID[1],
+					TempCardUID[2], TempCardUID[3]);
 
 			// if new card not detected
 			if (strcmp(LastCardHexStr, TempCardHexStr) == 0) {
@@ -231,8 +249,19 @@ int main(void) {
 
 			strcpy(LastCardHexStr, TempCardHexStr);
 
-			HAL_UART_Transmit(&huart2, (uint8_t*) TempCardHexStr,
-					strlen(TempCardHexStr), 10);
+			if (Rfid_Mode == RFID_READ) {
+				rfidModePrefix[0] = '0';
+			} else if (Rfid_Mode == RFID_SAVE) {
+				rfidModePrefix[0] = '1';
+			}
+
+			rfidModePrefix[1] = ' ';
+
+			snprintf(SerialSendStr, sizeof(SerialSendStr), "%s%s",
+					rfidModePrefix, TempCardHexStr);
+
+			HAL_UART_Transmit(&huart2, (uint8_t*) SerialSendStr,
+					strlen(SerialSendStr), 10000);
 
 			Beep();
 
