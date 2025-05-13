@@ -1,8 +1,9 @@
 import serial
 import pandas as pd
 import os
-import time
 from utils import attendance_lists_util
+import threading
+
 
 PATH_DB = "./db/uid.csv"
 
@@ -14,9 +15,13 @@ def Initialize_DB():
         os.makedirs("./db", exist_ok=True)
         df.to_csv(PATH_DB, index=False)
 
-
-def send_message(ser: serial.Serial, message: str):
-    ser.write(message.encode('utf-8'))
+    
+def send_message(ser: serial.Serial, message: str, lock: threading.Lock = None):
+    if lock:
+        with lock:
+            ser.write(message.encode('utf-8'))
+    else:
+        ser.write(message.encode('utf-8'))
 
 
 def fix_csv_if_broken():
@@ -44,7 +49,7 @@ def fix_csv_if_broken():
             break
 
 
-def save_db(ser: serial.Serial, card_uid_str: str):
+def save_db(ser: serial.Serial, card_uid_str: str, lock= None):
     fix_csv_if_broken()
 
     df = pd.read_csv(PATH_DB, sep=",", engine="python")
@@ -59,10 +64,10 @@ def save_db(ser: serial.Serial, card_uid_str: str):
         df = pd.concat([df, new_row], ignore_index=True)
         df.to_csv(PATH_DB, index=False)
         message_toSend = "OK\n"
-        send_message(ser, message_toSend)
+        send_message(ser, message_toSend, lock)
 
 
-def read_db(ser: serial.Serial, card_uid_str: str):
+def read_db(ser: serial.Serial, card_uid_str: str, lock=None):
     fix_csv_if_broken()
     attendance_lists_util.create_attendance_list()
 
@@ -86,7 +91,7 @@ def read_db(ser: serial.Serial, card_uid_str: str):
         message_toSend = "ERR\n"
 
     print(f"Sending to STM32: {message_toSend.strip()}")
-    send_message(ser, message_toSend)
+    send_message(ser, message_toSend, lock)
     
     
     

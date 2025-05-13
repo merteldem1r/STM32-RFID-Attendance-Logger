@@ -1,7 +1,6 @@
 import time
 import pandas as pd
 import os
-from utils import csv_util
 
 time_in_secs = time.time()
 current_time_full_day = time.ctime(time_in_secs)

@@ -23,10 +23,13 @@ CSV_UTIL.Initialize_DB()
 
 # deep researche about below code (especially abouy Threads)
 
+serial_lock = threading.Lock()
+
 def heartbeat_thread(ser: serial.Serial):
     while True:
         try:
-            ser.write(b"HB")  # Send heartbeat
+            with serial_lock:
+                ser.write(b"HB\n")
             time.sleep(2)
         except Exception as e:
             print(f"Heartbeat thread error: {e}")
@@ -48,13 +51,20 @@ try:
                 continue
 
             print("DATA:", data)
+            
+            if data == "HB":
+                continue
+
 
             rfid_mode = data_list[0]
             card_uid_list = data_list[1:]
             card_uid_str = ' '.join(card_uid_list)
             print("card_uid_str: ", card_uid_str)
 
-            if card_uid_str == "HB":
+            # if card_uid_str == "HB":
+            #     continue
+            
+            if not card_uid_str or card_uid_str == "HB":
                 continue
 
             print(
@@ -62,10 +72,10 @@ try:
 
             if rfid_mode == "1":
                 # SAVE
-                CSV_UTIL.save_db(ser, card_uid_str)
+                CSV_UTIL.save_db(ser, card_uid_str, lock=serial_lock)
             elif rfid_mode == "0":
                 # READ
-                CSV_UTIL.read_db(ser, card_uid_str)
+                CSV_UTIL.read_db(ser, card_uid_str, lock=serial_lock)
             else:
                 pass
             # print(data_list)
