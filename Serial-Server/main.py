@@ -3,25 +3,71 @@ from utils import csv_util as CSV_UTIL
 import time
 import threading
 
-# Arduino test
-# ser = serial.Serial("/dev/tty.usbserial-10")
-# ser.baudrate = 9600
-
-# STM32
+# USB to TTL port on macos (change based on your PORT)
 ser = serial.Serial("/dev/tty.usbserial-B0044FJ3")
 ser.baudrate = 115200
 print("Serial PORT: ", ser.name)
 
-# 1- when the programme first run check if db excel file exist (if not create db excel file)
-# 2- create serial communication with microcontroller
-# 3- create interval (2 seconds) of heartbeat to STM32
-# connected. errorhandling
-# 4- wait messages from STM32:
-#       4.1- SAVE: save the card UID to db.csv, send "OK " message to STM32 (is it longer than 4 bytes)
-#       4.2- READ: 4.2.1: check from db if user exist, if exist send user info (e.g. "Mert Eldemir-220201019") if NOT exist send "ERR" message to STM32
-#                  4.2.2: on startup create attendance-lists folder with curremt date .csv (e.g. 12-05-2025.csv) (new headers: card_uid,user_name,user_id,last_log_date,total_reads)
-#                  4.2.3: after sending user_name and user_id to the STM32 update the attendance-list
+# AUTHENTICATION code to send STM32 to keep Serial Communication
+HEART_BEAT_CODE = "STM32PY"
 
+""" 
+COMMUNICATION PROTOCOL:
+
+    1) from SERIAL-SERVER to STM32 
+        String Structure: "{CODE}|MSG"
+        
+            CODE:
+                Definition:
+                    Code to clarify the response. Either Hearbeat, Read or Save.
+
+                Types:
+                    H: Hearbeat (Every 2 seconds to keep Serial Communication) 
+                    R: Read Response
+                    S: Save Response
+                        
+
+            MSG:
+                Definition:
+                    Message from Serial Server.
+
+                Types:
+                    For Read:
+                        ERR: User not found
+                        {USER_INFO}: Found user inormaion (e.g. "Mert Eldemir-220201019")
+                            
+                    For Save: 
+                        ERR: Saving failed
+                        DUP: Duplicate. UID already saved
+                        OK: UID saved to database
+        Examples: 
+            "H|STM32PY" (Auth code to keep serial connectino)
+            
+            "R|Ahsen Yenisey-220201019" (UID information response)
+            "R|ERR" (UID not found)
+            
+            "S|ERR" Saving failed
+                etc.
+                
+            
+    2) from STM32 to SERIAL-SERVER
+        String Structure: "{CODE} {UID}"
+        
+            CODE:
+                Definition:
+                    Code to clarify to the Serial Server what should be done with received UID. Either Read and send back information or Save to the database
+
+                Types:
+                    0: Read (to read UID and send response of user information)
+                    1: Save (to save UID to database)
+            UID: 
+                Definiton:
+                    4 byte UID information from RFID card
+                    
+        Examples:
+            "0 D6 97 71 AF" (Save UID to database)
+            "1 D6 97 71 AF" (Read card from database and response with info)
+"""
 
 CSV_UTIL.Initialize_DB()
 
@@ -34,7 +80,9 @@ def heartbeat_thread(ser: serial.Serial):
     while True:
         try:
             with serial_lock:
-                ser.write(b"HB")
+                heartbeat_str = f"H|{HEART_BEAT_CODE}\0".ljust(
+                    33, '\0')
+                ser.write(heartbeat_str.encode())
             time.sleep(2)
         except Exception as e:
             print(f"Heartbeat thread error: {e}")

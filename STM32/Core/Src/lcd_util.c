@@ -48,7 +48,7 @@ void printSerialWaitingTimer(uint8_t remainSec) {
 void printSerialErrorMessage() {
 	lcd_clear();
 	lcd_put_cur(0, 0);
-	lcd_send_string("Serial failed");
+	lcd_send_string("Serial FAILED");
 	lcd_put_cur(1, 0);
 	lcd_send_string("Press reset btn!");
 }
@@ -70,4 +70,40 @@ void printRfidModeMessage(RFID_Mode rfid_mode) {
 	lcd_send_string(msgBuffer);
 	lcd_put_cur(1, 0);
 	lcd_send_string("Put your card");
+}
+
+void printSerialReadResponse(char* msg) {
+	lcd_clear();
+	lcd_put_cur(0, 0);
+	lcd_send_string("");
+	lcd_put_cur(1, 0);
+	lcd_send_string("");
+}
+
+void printUserNotFound() {
+	lcd_clear();
+	lcd_put_cur(0, 0);
+	lcd_send_string("Provided UID");
+	lcd_put_cur(1, 0);
+	lcd_send_string("Not found!");
+}
+
+void printSerialSaveResponse(char* msg) {
+
+}
+
+void printSavingWentWrong() {
+	lcd_clear();
+	lcd_put_cur(0, 0);
+	lcd_send_string("Something went");
+	lcd_put_cur(1, 0);
+	lcd_send_string("wrong on Save!");
+}
+
+void printDuplicateSave() {
+	lcd_clear();
+	lcd_put_cur(0, 0);
+	lcd_send_string("Provided UID");
+	lcd_put_cur(1, 0);
+	lcd_send_string("Already saved!");
 }

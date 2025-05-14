@@ -16,10 +16,12 @@ def Initialize_DB():
         df.to_csv(PATH_DB, index=False)
 
 
-def send_message(ser: serial.Serial, message: str, lock: threading.Lock = None):
+def send_serial_message(ser: serial.Serial, response_mode: str, message: str, lock: threading.Lock = None):
     if lock:
         with lock:
-            ser.write(message.encode('utf-8'))
+            message_str = f"{response_mode}|{message}\0".ljust(33, '\0')
+            ser.write(message_str.encode('utf-8'))
+            print("Sent to STM32: ", message_str)
     else:
         ser.write(message.encode('utf-8'))
 
@@ -55,6 +57,8 @@ def save_db(ser: serial.Serial, card_uid_str: str, lock=None):
     df = pd.read_csv(PATH_DB, sep=",", engine="python")
     df = df.dropna(how="all")
 
+    message_to_send = ""
+
     if card_uid_str not in df["card_uid"].values:
         new_row = pd.DataFrame([{
             "card_uid": card_uid_str,
@@ -63,8 +67,11 @@ def save_db(ser: serial.Serial, card_uid_str: str, lock=None):
         }])
         df = pd.concat([df, new_row], ignore_index=True)
         df.to_csv(PATH_DB, index=False)
-        message_toSend = "OK"
-        send_message(ser, message_toSend, lock)
+        message_to_send = "OK"
+    else:
+        message_to_send = "DUP"  # duplicate
+
+    send_serial_message(ser, "S", message_to_send, lock)
 
 
 def read_db(ser: serial.Serial, card_uid_str: str, lock=None):
@@ -74,6 +81,8 @@ def read_db(ser: serial.Serial, card_uid_str: str, lock=None):
     df = pd.read_csv(PATH_DB, sep=",", engine="python")
     df = df.dropna(how="all")
 
+    message_to_send = ""
+
     if card_uid_str in df["card_uid"].values:
         row = df[df["card_uid"] == card_uid_str].iloc[0]
 
@@ -82,17 +91,13 @@ def read_db(ser: serial.Serial, card_uid_str: str, lock=None):
         user_id = str(round(row["user_id"])).strip(
         ) if pd.notna(row["user_id"]) else ""
 
-        message_toSend = f"{user_name}-{user_id}"
-        print("Send to STM32: ", message_toSend)
-
-        attendance_lists_util.update_attendance_list(
-            card_uid_str=card_uid_str, user_name=user_name, user_id=user_id)
-
-        if not user_name and not user_id:
-            message_toSend = "ERR"
-
+        if user_name and user_id:
+            message_to_send = f"{user_name}-{user_id}"
+            attendance_lists_util.update_attendance_list(
+                card_uid_str, user_name, user_id)
+        else:
+            message_to_send = "ERR"
     else:
-        message_toSend = "ERR"
+        message_to_send = "ERR"
 
-    print(f"Sending to STM32: {message_toSend.strip()}")
-    send_message(ser, message_toSend, lock)
+    send_serial_message(ser, "R", message_to_send, lock)

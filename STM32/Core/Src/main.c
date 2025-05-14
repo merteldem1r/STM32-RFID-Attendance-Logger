@@ -79,12 +79,11 @@ char LastCardHexStr[12];
 // RFID MODE & SERIAL STATUS settings
 SERIAL_Status Serial_Status = SERIAL_PENDING;
 
+char HEARTBEAT_CODE[] = "STM32PY"; // Serial AUTH code
 uint32_t LastReceivedHbTime = 0;
 uint32_t hbReceiveCount = 0;
-uint8_t HEARTBEAT_CODE[] = { 'H', 'B' };
-uint8_t rxHbBuffer[10]; // buffer to write received Heartbeat
 
-uint8_t responseBuffer[30];
+uint8_t rxBuffer[33]; // buffer to write received messages from Serial
 
 // RFID MODULE SETTINGS
 RFID_Mode Rfid_Mode = RFID_READ;
@@ -122,10 +121,11 @@ void WaitStartupHeartbeatSerial() {
 	uint8_t remainingSec = 9;
 
 	while ((HAL_GetTick() - startTime) < 10000) {
-		if (HAL_UART_Receive(&huart2, rxHbBuffer, 2, 100) == HAL_OK) {
+		if (HAL_UART_Receive(&huart2, rxBuffer, 10, 100) == HAL_OK) {
 			// HB received
-			if (memcmp(HEARTBEAT_CODE, rxHbBuffer, sizeof(HEARTBEAT_CODE))
-					== 0) {
+			char *msg = (char*) &rxBuffer[2];
+
+			if (strcmp(msg, HEARTBEAT_CODE) == 0) {
 				LastReceivedHbTime = HAL_GetTick();
 				++hbReceiveCount;
 				SetSerialOkayState();
@@ -168,6 +168,8 @@ void ToggleRfidMode() {
 }
 
 // Interrupt Callbacks
+
+// Blue button push
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	if (GPIO_Pin == GPIO_PIN_0 && Serial_Status == SERIAL_OK) {
 		ToggleRfidMode();
@@ -176,15 +178,57 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	}
 }
 
+// Serial messages & responses
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-	if (huart->Instance == USART2) {
-		if (memcmp(HEARTBEAT_CODE, rxHbBuffer, sizeof(HEARTBEAT_CODE)) == 0) {
+	if (huart->Instance != USART2) {
+		return;
+	}
+
+	// message format from server: CODE|DATA\0
+	if (rxBuffer[1] != '|') {
+		// wrong format
+		return;
+	}
+
+	char code = rxBuffer[0];
+	char *msg = (char*) &rxBuffer[2];
+
+	switch (code) {
+	case 'H':
+		// Heartbeat
+		if (memcmp(rxBuffer, HEARTBEAT_CODE, sizeof(HEARTBEAT_CODE)) == 0) {
 			LastReceivedHbTime = HAL_GetTick();
 			++hbReceiveCount;
 		}
+		break;
 
-		HAL_UART_Receive_IT(&huart2, rxHbBuffer, 2);
+	case 'R':
+		// Read response
+		if (strcmp(msg, "ERR") == 0) {
+			printUserNotFound();
+		} else {
+			printSerialReadResponse(msg);
+		}
+
+		break;
+
+	case 'S':
+		// Save response
+		if (strcmp(msg, "OK") == 0) {
+			printSerialSaveResponse(msg);
+		} else if (strcmp(msg, "DUP") == 0) {
+			printDuplicateSave();
+		} else {
+			printSavingWentWrong();
+		}
+
+		break;
 	}
+
+	memset(rxBuffer, 0, sizeof(rxBuffer));
+
+	HAL_UART_Receive_IT(&huart2, rxBuffer, 33);
+
 }
 
 /* USER CODE END 0 */
@@ -235,7 +279,7 @@ int main(void) {
 	SetSerialPengingState();
 	WaitStartupHeartbeatSerial();
 
-	HAL_UART_Receive_IT(&huart2, rxHbBuffer, 2);
+	HAL_UART_Receive_IT(&huart2, rxBuffer, 33);
 
 // int main() variables
 
@@ -251,7 +295,7 @@ int main(void) {
 	while (1) {
 		if (Serial_Status != SERIAL_OK) {
 			HAL_GPIO_TogglePin(STM_LED_PORT, SERIAL_ERR_LED_PIN);
-			HAL_Delay(200);
+			HAL_Delay(300);
 			continue;
 		}
 
@@ -296,11 +340,12 @@ int main(void) {
 					strlen(SerialSendStr), 100);
 
 			Beep();
-			lcd_clear();
-			lcd_put_cur(0, 0);
-			lcd_send_string("CARD UID:");
-			lcd_put_cur(1, 0);
-			lcd_send_string(TempCardHexStr);
+
+			// lcd_clear();
+			// lcd_put_cur(0, 0);
+			// lcd_send_string("CARD UID:");
+			// lcd_put_cur(1, 0);
+			// lcd_send_string(TempCardHexStr);
 
 			HAL_Delay(750);
 
