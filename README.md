@@ -1,10 +1,12 @@
-# STM32-RFID-Attendance-Logger
+# STM32 RFID Attendance Logger
 
 ![preview](https://github.com/user-attachments/assets/d679b11e-f3bc-4dff-b29e-ed7bd3e67ba4)
 
 ## Project Description
 
 This is an **RFID-based attendance logging system** built using the **STM32F407G-DISC1** microcontroller and an **RFID-RC522** module. It enables **reading**, **saving**, and **logging attendance** of RFID cards through **UART serial communication** with a **Python-based Serial Server**.
+
+**AUTHORS**: **[Mert Eldemir](https://github.com/merteldem1r) & [Ahsen Yenisey](https://github.com/ahsenyenisey)**
 
 ## System Overview
 
