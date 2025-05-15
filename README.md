@@ -1,6 +1,6 @@
 # STM32-RFID-Attendance-Logger
 
-// thumbnail image
+![preview](https://github.com/user-attachments/assets/d679b11e-f3bc-4dff-b29e-ed7bd3e67ba4)
 
 ## Project Description
 
@@ -27,7 +27,7 @@ This is an **RFID-based attendance logging system** built using the **STM32F407G
 
 ## Project Flawchart
 
-// image
+![710F8E9D-DAC3-4D02-ABF5-22CAD0B8E89C_1_201_a](https://github.com/user-attachments/assets/47f69778-43fb-4a11-be02-e5f067d4f07b)
 
 ## Device & App Preview
 
