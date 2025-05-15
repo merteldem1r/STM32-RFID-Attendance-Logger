@@ -114,6 +114,8 @@ void SetSerialPengingState() {
 void SetSerialErrorState() {
 	Serial_Status = SERIAL_ERR;
 	HAL_UART_AbortReceive_IT(&huart2);
+	memset(LastCardHexStr, 0, sizeof(LastCardHexStr));
+	memset(rxBuffer, 0, sizeof(rxBuffer));
 	ResetAllLedsSTM();
 	HAL_GPIO_WritePin(STM_LED_PORT, SERIAL_ERR_LED_PIN, GPIO_PIN_SET);
 	printSerialErrorMessage();

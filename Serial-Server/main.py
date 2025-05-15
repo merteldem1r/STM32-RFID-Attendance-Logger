@@ -15,7 +15,7 @@ HEART_BEAT_CODE = "STM32PY"
 COMMUNICATION PROTOCOL:
 
     1) from SERIAL-SERVER to STM32 
-        String Structure: "{CODE}|MSG"
+        String Structure: "{CODE}|{MSG}"
         
             CODE:
                 Definition:
