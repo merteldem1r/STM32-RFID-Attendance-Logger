@@ -57,15 +57,15 @@ This is an **RFID-based attendance logging system** built using the **STM32F407G
   - `numpy` `pandas`
   - `pytz` `six` `python-dateutil` `tzdata`
 
-## Communication Protocol (between STM32 and Serial Server)
+## Communication Protocol between STM32 & Serial Server
 
 ### 1) From SERIAL-SERVER to STM32
 
-**String Format:** `{CODE}|{MSG}`
+**String Format:** `"{CODE}|{MSG}"`
 
 **CODE:** Type of response
 
-- `H`: Heartbeat (every 2 seconds)
+- `H`: Heartbeat (every 2 seconds to keep serial communication)
 - `R`: Read response
 - `S`: Save response
 
@@ -73,8 +73,9 @@ This is an **RFID-based attendance logging system** built using the **STM32F407G
 
 - For `R` (Read):
 
-  - `ERR`: User not found
-  - `{USER_INFO}`: e.g. `Mert Eldemir-220201019`
+  - `ERR`: User not found in database
+  - `{USER_INFO}`: User name and user id
+    - e.g. `Mert Eldemir-220201019`
 
 - For `S` (Save):
 
@@ -86,18 +87,20 @@ This is an **RFID-based attendance logging system** built using the **STM32F407G
 
 - `H|STM32PY`
 - `R|Ahsen Yenisey-220201019`
+- `R|ERR`
+- `S|OK`
 - `S|DUP`
 
 ### 2) From STM32 to SERIAL-SERVER
 
-**String Format:** `{CODE} {UID}`
+**String Format:** `"{CODE} {UID}"`
 
 **CODE:** Type of request
 
-- `0`: Read (check user info)
-- `1`: Save (store UID)
+- `0`: Read (check user and response info & log the attendance data)
+- `1`: Save (add UID to database)
 
-**UID:** 4-byte UID (space separated)
+**UID:** 4-byte UID (space separated as HEX format)
 
 **Examples:**
 
