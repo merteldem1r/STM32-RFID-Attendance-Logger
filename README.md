@@ -23,8 +23,6 @@ This is an **RFID-based attendance logging system** built using the **STM32F407G
 - For **SAVE**: Appends the UID to the database (if it's not already stored).
 - Logs all READ operations in a date-based `.csv` file in the `attendance_lists/` folder.
 
----
-
 ## Project Flawchart
 
 ![710F8E9D-DAC3-4D02-ABF5-22CAD0B8E89C_1_201_a](https://github.com/user-attachments/assets/47f69778-43fb-4a11-be02-e5f067d4f07b)
@@ -46,10 +44,8 @@ This is an **RFID-based attendance logging system** built using the **STM32F407G
 - **Libraries & Drivers Used**:
 
   - Default `HAL Drivers` (STM32f4xx)
-  - [MFRC522 Library](https://github.com/MaJerle/stm32f429/tree/main/23-STM32F429_MFRC522) - This is **Standard Peripheral Library (SPL)** which we convert to **HAL-compatible** code
+  - [MFRC522 Library](https://github.com/MaJerle/stm32f429/tree/main/23-STM32F429_MFRC522) - This is **Standard Peripheral Library (SPL)** which some parts we rewrite for converting it to **HAL-compatible** code
   - `I2C-LCD` library to dislay messages on 16x2 LCD (PCF8574T)
-
----
 
 ## Serial-Server Side
 
@@ -58,8 +54,6 @@ This is an **RFID-based attendance logging system** built using the **STM32F407G
   - `pyserial`
   - `numpy` `pandas`
   - `pytz` `six` `python-dateutil` `tzdata`
-
----
 
 ## Communication Protocol (between STM32 and Serial Server)
 
@@ -107,5 +101,3 @@ This is an **RFID-based attendance logging system** built using the **STM32F407G
 
 - `0 D6 97 71 AF`
 - `1 D6 97 71 AF`
-
----
