@@ -15,7 +15,7 @@ void printSerialWaitingTimer(uint8_t passedSec);
 void printSerialErrorMessage();
 void printRfidModeMessage(RFID_Mode rfid_mode);
 void printSerialReadResponse(char* msg);
-void printSerialSaveResponse(char* msg);
+void printSerialSavedUID(char* msg);
 void printUserNotFound();
 void printSavingWentWrong();
 void printDuplicateSave();

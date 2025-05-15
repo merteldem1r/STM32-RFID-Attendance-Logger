@@ -77,17 +77,24 @@ char TempCardHexStr[12];
 char LastCardHexStr[12];
 
 // RFID MODE & SERIAL STATUS settings
+
 SERIAL_Status Serial_Status = SERIAL_PENDING;
 
 char HEARTBEAT_CODE[] = "STM32PY"; // Serial AUTH code
 uint32_t LastReceivedHbTime = 0;
 uint32_t hbReceiveCount = 0;
 
-uint8_t rxBuffer[33]; // buffer to write received messages from Serial
+// Serial Receive buffer settings
+uint8_t rxByte;
+uint8_t rxBuffer[MAX_RX_BUFFER_SIZE];
+uint8_t rxIndex = 0;
 
 // RFID MODULE SETTINGS
 RFID_Mode Rfid_Mode = RFID_READ;
 uint8_t isRfidModeBtnPressed = 0;
+
+uint32_t lastLcdMessageTime = 0;
+uint8_t isLcdResetted = 1;
 
 void ResetAllLedsSTM();
 void SetRfidModeLED();
@@ -123,12 +130,18 @@ void WaitStartupHeartbeatSerial() {
 	while ((HAL_GetTick() - startTime) < 10000) {
 		if (HAL_UART_Receive(&huart2, rxBuffer, 10, 100) == HAL_OK) {
 			// HB received
+			printf("Hello world");
 			char *msg = (char*) &rxBuffer[2];
+			char *newline = strchr(msg, '\n');
+			if (newline) {
+				*newline = '\0';
+			}
 
 			if (strcmp(msg, HEARTBEAT_CODE) == 0) {
 				LastReceivedHbTime = HAL_GetTick();
 				++hbReceiveCount;
 				SetSerialOkayState();
+				memset(rxBuffer, 0, sizeof(rxBuffer));
 				return;
 			}
 		}
@@ -180,55 +193,64 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
 // Serial messages & responses
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-	if (huart->Instance != USART2) {
-		return;
-	}
-
-	// message format from server: CODE|DATA\0
-	if (rxBuffer[1] != '|') {
-		// wrong format
-		return;
-	}
-
-	char code = rxBuffer[0];
-	char *msg = (char*) &rxBuffer[2];
-
-	switch (code) {
-	case 'H':
-		// Heartbeat
-		if (memcmp(rxBuffer, HEARTBEAT_CODE, sizeof(HEARTBEAT_CODE)) == 0) {
-			LastReceivedHbTime = HAL_GetTick();
-			++hbReceiveCount;
-		}
-		break;
-
-	case 'R':
-		// Read response
-		if (strcmp(msg, "ERR") == 0) {
-			printUserNotFound();
+	if (huart->Instance == USART2) {
+		if (rxByte != '\n' && rxIndex < MAX_RX_BUFFER_SIZE - 1) {
+			rxBuffer[rxIndex++] = rxByte;
 		} else {
-			printSerialReadResponse(msg);
+			// Null-terminate the message
+			rxBuffer[rxIndex] = '\0';
+			rxIndex = 0;
+
+			// Check message format: CODE|DATA\0
+			if (rxBuffer[1] != '|') {
+				// Invalid format
+				HAL_UART_Receive_IT(&huart2, &rxByte, 1);
+				return;
+			}
+
+			char code = rxBuffer[0];
+			char *msg = (char*) &rxBuffer[2];
+
+			switch (code) {
+			case 'H':
+				if (strcmp(msg, HEARTBEAT_CODE) == 0) {
+					LastReceivedHbTime = HAL_GetTick();
+					++hbReceiveCount;
+					printf("msg: %s\n", msg);
+				}
+				break;
+
+			case 'R':
+				if (strcmp(msg, "ERR") == 0) {
+					printUserNotFound();
+				} else {
+					printSerialReadResponse(msg);
+				}
+
+				isLcdResetted = 0;
+				lastLcdMessageTime = HAL_GetTick();
+				break;
+
+			case 'S':
+				if (strcmp(msg, "OK") == 0) {
+					printSerialSavedUID(TempCardHexStr);
+				} else if (strcmp(msg, "DUP") == 0) {
+					printDuplicateSave();
+				} else {
+					printSavingWentWrong();
+				}
+
+				isLcdResetted = 0;
+				lastLcdMessageTime = HAL_GetTick();
+				break;
+			}
+
+			memset(rxBuffer, 0, 32);
 		}
 
-		break;
-
-	case 'S':
-		// Save response
-		if (strcmp(msg, "OK") == 0) {
-			printSerialSaveResponse(msg);
-		} else if (strcmp(msg, "DUP") == 0) {
-			printDuplicateSave();
-		} else {
-			printSavingWentWrong();
-		}
-
-		break;
+		// Always re-enable interrupt for next byte
+		HAL_UART_Receive_IT(&huart2, &rxByte, 1);
 	}
-
-	memset(rxBuffer, 0, sizeof(rxBuffer));
-
-	HAL_UART_Receive_IT(&huart2, rxBuffer, 33);
-
 }
 
 /* USER CODE END 0 */
@@ -279,7 +301,7 @@ int main(void) {
 	SetSerialPengingState();
 	WaitStartupHeartbeatSerial();
 
-	HAL_UART_Receive_IT(&huart2, rxBuffer, 33);
+	HAL_UART_Receive_IT(&huart2, rxBuffer, 1);
 
 // int main() variables
 
@@ -299,9 +321,16 @@ int main(void) {
 			continue;
 		}
 
+		// chech Heartbeat
 		if ((HAL_GetTick() - LastReceivedHbTime) > HEARTBEAT_TIMEOUT_MS) {
 			SetSerialErrorState();
 			continue;
+		}
+
+		// Reset LCD
+		if (isLcdResetted != 1 && (HAL_GetTick() - lastLcdMessageTime) > LCD_MESSAGE_TIME_MS) {
+			printRfidModeMessage(Rfid_Mode);
+			isLcdResetted = 1;
 		}
 
 		if (isRfidModeBtnPressed == 1) {
@@ -662,6 +691,15 @@ static void MX_GPIO_Init(void) {
 }
 
 /* USER CODE BEGIN 4 */
+int _write(int file, char *ptr, int len) {
+	(void) file;
+	int DataIdx;
+
+	for (DataIdx = 0; DataIdx < len; DataIdx++) {
+		ITM_SendChar(*ptr++);
+	}
+	return len;
+}
 
 /* USER CODE END 4 */
 

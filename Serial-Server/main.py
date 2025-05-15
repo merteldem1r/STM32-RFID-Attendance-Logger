@@ -80,8 +80,7 @@ def heartbeat_thread(ser: serial.Serial):
     while True:
         try:
             with serial_lock:
-                heartbeat_str = f"H|{HEART_BEAT_CODE}\0".ljust(
-                    33, '\0')
+                heartbeat_str = f"H|{HEART_BEAT_CODE}\n"
                 ser.write(heartbeat_str.encode())
             time.sleep(2)
         except Exception as e:

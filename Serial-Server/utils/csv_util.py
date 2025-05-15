@@ -19,7 +19,7 @@ def Initialize_DB():
 def send_serial_message(ser: serial.Serial, response_mode: str, message: str, lock: threading.Lock = None):
     if lock:
         with lock:
-            message_str = f"{response_mode}|{message}\0".ljust(33, '\0')
+            message_str = f"{response_mode}|{message}\n"
             ser.write(message_str.encode('utf-8'))
             print("Sent to STM32: ", message_str)
     else:

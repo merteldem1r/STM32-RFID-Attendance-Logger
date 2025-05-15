@@ -8,6 +8,7 @@
 #include "defines.h"
 #include "lcd_util.h"
 #include "stdio.h"
+#include "string.h"
 
 void printWelcomeMessage() {
 	char firstLine[] = "STM32-RF AT LOG";
@@ -72,12 +73,24 @@ void printRfidModeMessage(RFID_Mode rfid_mode) {
 	lcd_send_string("Put your card");
 }
 
-void printSerialReadResponse(char* msg) {
+void printSerialReadResponse(char *msg) {
+	char *pos = strchr(msg, '-');
+
 	lcd_clear();
-	lcd_put_cur(0, 0);
-	lcd_send_string("");
-	lcd_put_cur(1, 0);
-	lcd_send_string("");
+	if (pos) {
+		*pos = '\0';
+
+		lcd_put_cur(0, 0);
+		lcd_send_string(msg);
+		lcd_put_cur(1, 0);
+		lcd_send_string(++pos);
+	} else {
+		lcd_put_cur(0, 0);
+		lcd_send_string("Wrong message");
+		lcd_put_cur(1, 0);
+		lcd_send_string("Format");
+	}
+
 }
 
 void printUserNotFound() {
@@ -88,8 +101,12 @@ void printUserNotFound() {
 	lcd_send_string("Not found!");
 }
 
-void printSerialSaveResponse(char* msg) {
-
+void printSerialSavedUID(char *uid) {
+	lcd_clear();
+	lcd_put_cur(0, 0);
+	lcd_send_string("UID Saved:");
+	lcd_put_cur(1, 0);
+	lcd_send_string(uid);
 }
 
 void printSavingWentWrong() {
