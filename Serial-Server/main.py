@@ -116,7 +116,7 @@ try:
                 continue
 
             print(
-                f"Received from STM32: {"SAVE" if rfid_mode == "1" else "READ"} {card_uid_str}")
+                f"Received from STM32:  {data}")
 
             if rfid_mode == "1":
                 # SAVE

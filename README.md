@@ -1,9 +1,10 @@
 # STM32-RFID-Attendance-Logger
 
-## Overview
+// thumbnail image
+
+## Project Description
 
 This is an **RFID-based attendance logging system** built using the **STM32F407G-DISC1** microcontroller and an **RFID-RC522** module. It enables **reading**, **saving**, and **logging attendance** of RFID cards through **UART serial communication** with a **Python-based Serial Server**.
-
 
 ## System Overview
 
@@ -24,13 +25,39 @@ This is an **RFID-based attendance logging system** built using the **STM32F407G
 
 ---
 
-## Hardware Used
+## Project Flawchart
 
-- **STM32F407G-DISC1** microcontroller
-- **RFID-RC522** module
-- **LCD with I2C interface** (PCF8574T)
-- **Buzzer**
-- **USB to TTL converter** (FT232RL)
+// image
+
+## Device & App Preview
+
+// image
+
+## STM32 Side
+
+- **Hardware Used**:
+
+  - **STM32F407G-DISC1** microcontroller
+  - **RFID-RC522** module
+  - **LCD with I2C interface** (PCF8574T)
+  - **Buzzer**
+  - **USB to TTL converter** (FT232RL)
+
+- **Libraries & Drivers Used**:
+
+  - Default `HAL Drivers` (STM32f4xx)
+  - [MFRC522 Library](https://github.com/MaJerle/stm32f429/tree/main/23-STM32F429_MFRC522) - This is **Standard Peripheral Library (SPL)** which we convert to **HAL-compatible** code
+  - `I2C-LCD` library to dislay messages on 16x2 LCD (PCF8574T)
+
+---
+
+## Serial-Server Side
+
+- **Libraries Used**:
+
+  - `pyserial`
+  - `numpy` `pandas`
+  - `pytz` `six` `python-dateutil` `tzdata`
 
 ---
 
@@ -82,15 +109,3 @@ This is an **RFID-based attendance logging system** built using the **STM32F407G
 - `1 D6 97 71 AF`
 
 ---
-
-## Serial-Server - Python
-
-### Libraries Used
-
-- `numpy`
-- `pandas`
-- `pyserial`
-- `python-dateutil`
-- `pytz`
-- `six`
-- `tzdata`
