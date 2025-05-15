@@ -11,5 +11,7 @@
 void Beep();
 void SerialErrBeep();
 void SerialOkBeep();
+void UserNotFoundBeep();
+void UserSavedBeep();
 
 #endif /* INC_BUZZER_UTIL_H_ */

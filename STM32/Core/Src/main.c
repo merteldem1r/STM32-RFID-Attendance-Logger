@@ -96,6 +96,11 @@ uint8_t isRfidModeBtnPressed = 0;
 uint32_t lastLcdMessageTime = 0;
 uint8_t isLcdResetted = 1;
 
+// Buzzer States
+uint8_t isBuzzerBeep = 0;
+uint8_t isBuzzerSaveBeep = 0;
+uint8_t isBuzzerNotFoundBeep = 0;
+
 void ResetAllLedsSTM();
 void SetRfidModeLED();
 
@@ -223,8 +228,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 			case 'R':
 				if (strcmp(msg, "ERR") == 0) {
 					printUserNotFound();
+					isBuzzerNotFoundBeep = 1;
 				} else {
 					printSerialReadResponse(msg);
+					isBuzzerBeep = 1;
 				}
 
 				isLcdResetted = 0;
@@ -234,8 +241,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 			case 'S':
 				if (strcmp(msg, "OK") == 0) {
 					printSerialSavedUID(TempCardHexStr);
+					isBuzzerSaveBeep = 1;
 				} else if (strcmp(msg, "DUP") == 0) {
 					printDuplicateSave();
+					isBuzzerNotFoundBeep = 1;
 				} else {
 					printSavingWentWrong();
 				}
@@ -315,6 +324,20 @@ int main(void) {
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
 	while (1) {
+		// STATE CONTROLS
+
+		// Buzzer sound states
+		if (isBuzzerBeep) {
+			Beep();
+			isBuzzerBeep = 0;
+		} else if (isBuzzerNotFoundBeep) {
+			UserNotFoundBeep();
+			isBuzzerNotFoundBeep = 0;
+		} else if (isBuzzerSaveBeep) {
+			UserSavedBeep();
+			isBuzzerSaveBeep = 0;
+		}
+
 		if (Serial_Status != SERIAL_OK) {
 			HAL_GPIO_TogglePin(STM_LED_PORT, SERIAL_ERR_LED_PIN);
 			HAL_Delay(300);
@@ -328,7 +351,8 @@ int main(void) {
 		}
 
 		// Reset LCD
-		if (isLcdResetted != 1 && (HAL_GetTick() - lastLcdMessageTime) > LCD_MESSAGE_TIME_MS) {
+		if (isLcdResetted
+				!= 1&& (HAL_GetTick() - lastLcdMessageTime) > LCD_MESSAGE_TIME_MS) {
 			printRfidModeMessage(Rfid_Mode);
 			isLcdResetted = 1;
 		}
@@ -338,6 +362,8 @@ int main(void) {
 			HAL_Delay(200);
 			isRfidModeBtnPressed = 0;
 		}
+
+		// MAIN RFID LOGIC
 
 		// Check if card is presented
 		if (MFRC522_Check(CardUID) == MI_OK) {
@@ -368,16 +394,11 @@ int main(void) {
 			HAL_UART_Transmit(&huart2, (uint8_t*) SerialSendStr,
 					strlen(SerialSendStr), 100);
 
-			Beep();
-
 			// lcd_clear();
 			// lcd_put_cur(0, 0);
 			// lcd_send_string("CARD UID:");
 			// lcd_put_cur(1, 0);
 			// lcd_send_string(TempCardHexStr);
-
-			HAL_Delay(750);
-
 		}
 
 		/* USER CODE END WHILE */
