@@ -2,49 +2,43 @@
 
 ## Overview
 
-This is a **RFID-based attendance logging system** project using the **STM32F407G-DISC1** microcontroller and an **RFID-RC522** module. It enables both **reading**, **saving** and **attendance-logging** RFID card data through **UART serial communication** with a **Python-based Serial Server**. The STM32 handles all hardware interactions, including:
+This is an **RFID-based attendance logging system** built using the **STM32F407G-DISC1** microcontroller and an **RFID-RC522** module. It enables **reading**, **saving**, and **logging attendance** of RFID cards through **UART serial communication** with a **Python-based Serial Server**.
 
-This project consists of **two main parts**:
 
-- **STM32 Firmware**: Handles RFID card scanning, LCD display, buzzer control, and UART communication.
+## System Overview
 
-- **Serial Server (Python)**: Receives scanned card **UIDs** via **UART**, save user UID into **CSV database**, sends back user info to STM32 for display and create day by day CSV file for read cards in **attendance_lists** folder.
+### STM32 Side
 
-## Project Structure
+- Reads RFID cards using the **MFRC522** module.
+- Sends UID to the Serial Server via **UART** (for READ or SAVE).
+- Displays the received user information (name and ID) on the **LCD**.
+- Plays buzzer tones for feedback.
+- Listens for a heartbeat signal every 2 seconds to maintain serial connection health.
 
-- **STM32 Side:**
+### Serial-Server Side (Python)
 
-  - Sends UID to Serial Server as requests and interprets responses.
-  - Reads **RFID** card using **MFRC522** and sends UID to the **Serial-Server** via **UART** (as **READ request**).
-  - Displays user name and ID on **LCD** which in database, from **Serial-Server** (as **READ response**).
-  - Plays buzzer on actions.
-  - Receiving Hearbeat code every 2 seconds to keep Serial Communication.
-
-- **Serial-Server Side (Python):**
-
-  - Receives UID from STM32 as **READ** or **SAVE** mode
-  - Responds with user info or error based on local `.csv` **database**
-  - Saves new UID if in SAVE mode
-  - **Logs attendance** entries under a date-named file in `Attendance List/`
+- Receives UIDs from STM32 as either **READ** or **SAVE** requests.
+- For **READ**: Looks up the UID in a local CSV database and responds with user information.
+- For **SAVE**: Appends the UID to the database (if it's not already stored).
+- Logs all READ operations in a date-based `.csv` file in the `attendance_lists/` folder.
 
 ---
-
-## App Preview
-// images
 
 ## Hardware Used
 
 - **STM32F407G-DISC1** microcontroller
 - **RFID-RC522** module
-- **LCD** with I2C (PCF8574T)
+- **LCD with I2C interface** (PCF8574T)
 - **Buzzer**
-- **USB to TTL (FT232RL)** converter
+- **USB to TTL converter** (FT232RL)
+
+---
 
 ## Communication Protocol (between STM32 and Serial Server)
 
 ### 1) From SERIAL-SERVER to STM32
 
-String Format: `{CODE}|{MSG}`
+**String Format:** `{CODE}|{MSG}`
 
 **CODE:** Type of response
 
@@ -73,7 +67,7 @@ String Format: `{CODE}|{MSG}`
 
 ### 2) From STM32 to SERIAL-SERVER
 
-String Format: `{CODE} {UID}`
+**String Format:** `{CODE} {UID}`
 
 **CODE:** Type of request
 
@@ -89,7 +83,7 @@ String Format: `{CODE} {UID}`
 
 ---
 
-## Python Serial Server
+## Serial-Server - Python
 
 ### Libraries Used
 
