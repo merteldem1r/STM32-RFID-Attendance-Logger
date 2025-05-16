@@ -1,3 +1,6 @@
+# Developd by Ahsen Yenisey
+# GitHub: https://github.com/ahsenyenisey
+
 import serial
 from utils import csv_util as CSV_UTIL
 import time
