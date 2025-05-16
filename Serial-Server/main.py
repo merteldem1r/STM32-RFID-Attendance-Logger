@@ -1,15 +1,31 @@
-# Developd by Ahsen Yenisey
+# Developed by Ahsen Yenisey
 # GitHub: https://github.com/ahsenyenisey
 
+import sys
 import serial
 from utils import csv_util as CSV_UTIL
 import time
 import threading
 
 # USB to TTL port on macos (change based on your PORT)
-ser = serial.Serial("/dev/tty.usbserial-B0044FJ3")
-ser.baudrate = 115200
-print("Serial PORT: ", ser.name)
+
+SERIAL_PORT: str = "/dev/tty.usbserial-B0044FJ3"
+
+ser = None
+
+def Start_Serial():
+    global ser
+    try:
+        ser = serial.Serial()
+        ser.port = SERIAL_PORT
+        ser.baudrate = 115200
+        ser.open()
+        print("Serial PORT:", ser.name)
+    except serial.SerialException as e:
+        print(f"Error opening serial port {SERIAL_PORT}: {e}")
+        sys.exit(1)
+
+Start_Serial()
 
 # AUTHENTICATION code to send STM32 to keep Serial Communication
 HEART_BEAT_CODE = "STM32PY"
@@ -93,8 +109,7 @@ def heartbeat_thread(ser: serial.Serial):
 
 # Start heartbeat thread
 heartbeat = threading.Thread(target=heartbeat_thread, args=(ser,), daemon=True)
-heartbeat.start()
-
+    
 
 try:
     while True:
