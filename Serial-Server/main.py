@@ -90,8 +90,6 @@ COMMUNICATION PROTOCOL:
 
 CSV_UTIL.Initialize_DB()
 
-# deep researche about below code (especially abouy Threads)
-
 serial_lock = threading.Lock()
 
 
