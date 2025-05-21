@@ -12,7 +12,7 @@ full_date = f"{current_day}" + "-" + f"{current_month}" + "-" + f"{current_year}
 
 print(full_date)
 
-PATH_AL = f"./attendance_lists/{full_date}.csv"
+PATH_AL = f"../Database/attendance_lists/{full_date}.csv"
 
 
 def create_attendance_list():

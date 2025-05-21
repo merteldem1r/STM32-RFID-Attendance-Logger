@@ -5,8 +5,7 @@ from utils import attendance_lists_util
 import threading
 
 
-PATH_DB = "./db/uid.csv"
-
+PATH_DB = "../Database/uid.csv"
 
 def Initialize_DB():
     if not os.path.exists(PATH_DB) or os.stat(PATH_DB).st_size == 0:

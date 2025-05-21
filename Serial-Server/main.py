@@ -107,7 +107,7 @@ def heartbeat_thread(ser: serial.Serial):
 
 # Start heartbeat thread
 heartbeat = threading.Thread(target=heartbeat_thread, args=(ser,), daemon=True)
-    
+heartbeat.start()
 
 try:
     while True:
