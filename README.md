@@ -57,7 +57,15 @@ This is an **RFID-based attendance logging system** built using the **STM32F407G
   - `numpy` `pandas`
   - `pytz` `six` `python-dateutil` `tzdata`
 
-## Communication Protocol between STM32 & Serial Server
+## Communication between STM32 & Serial Server
+
+**IMPORTANT NOTE**: Unlike the Nucleo boards, the **STM32F407G-DISC1** microcontroller not has a virtual COM port to ST-LINK for UART communication. That's why our messages transmits via external **USB to TTL** converter (FT232RL) from connected **TX** and **RX pins**.
+
+**Baud Rate**: 115200 bits/s
+
+We have created our own **communication protocol** between **STM32** and **Serial-Server** for: hearbeat signals, save & read requests and responses, error handling.
+
+Here is the **Communication Protocol** between two separated parts of our project below:
 
 ### 1) From SERIAL-SERVER to STM32
 
@@ -74,7 +82,7 @@ This is an **RFID-based attendance logging system** built using the **STM32F407G
 - For `R` (Read):
 
   - `ERR`: User not found in database
-  - `{USER_INFO}`: User name and user id
+  - `{USER_INFO}`: user_name and user_id from database
     - e.g. `Mert Eldemir-220201019`
 
 - For `S` (Save):
@@ -85,7 +93,7 @@ This is an **RFID-based attendance logging system** built using the **STM32F407G
 
 **Examples:**
 
-- `H|STM32PY`
+- `H|STM32PY` 
 - `R|Ahsen Yenisey-220201019`
 - `R|ERR`
 - `S|OK`
@@ -95,10 +103,10 @@ This is an **RFID-based attendance logging system** built using the **STM32F407G
 
 **String Format:** `"{CODE} {UID}"`
 
-**CODE:** Type of request
+**CODE:** Type of request rather read or save
 
-- `0`: Read (check user and response info & log the attendance data)
-- `1`: Save (add UID to database)
+- `0`: **Read** (check user and response the info & log the attendance data)
+- `1`: **Save** (add UID to the database)
 
 **UID:** 4-byte UID (space separated as HEX format)
 
