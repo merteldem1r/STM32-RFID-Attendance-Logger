@@ -33,11 +33,15 @@ This is an **RFID-based attendance logging system** built using the **STM32F407G
 
 ### STM32 SERIAL STATES
 
-// image
+Serial States define in which stage the serial communication between **STM32 and Serial-Server**. STM32 listens for the **Hearbeat** (special heartbeat code) signals from the **Serial-Server** to maintain connection during the operation. 
 
-### STM32 RFID MODES
+![11809138-2D02-4C6D-9ABF-94417818FC74_1_201_a](https://github.com/user-attachments/assets/273fc12b-dbd5-4602-a528-72e7e875f8bc)
 
-// image
+### STM32 RFID MODES (Toggle Blue Button)
+
+While the Serial connection is stable we can use the built-in **STM32 Blue Button** to switch between **RFID modes** and process the wanted operation.
+
+![F935037A-E725-43DC-BD95-C0906572A4D3_1_201_a](https://github.com/user-attachments/assets/a4d029a3-059f-48dc-ad56-b186f9eaec93)
 
 ## STM32 Side
 
