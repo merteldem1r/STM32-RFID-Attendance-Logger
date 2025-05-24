@@ -31,6 +31,12 @@ This is an **RFID-based attendance logging system** built using the **STM32F407G
 
 ## Device & App Preview
 
+### STM32 SERIAL STATES
+
+// image
+
+### STM32 RFID MODES
+
 // image
 
 ## STM32 Side
