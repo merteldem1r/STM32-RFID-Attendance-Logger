@@ -361,6 +361,7 @@ int main(void) {
 
 		if (isRfidModeBtnPressed == 1) {
 			memset(LastCardHexStr, 0, sizeof(LastCardHexStr)); // Reset last read UID
+			Beep();
 			HAL_Delay(200);
 			isRfidModeBtnPressed = 0;
 		}

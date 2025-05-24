@@ -63,7 +63,7 @@ This is an **RFID-based attendance logging system** built using the **STM32F407G
 
 **Baud Rate**: 115200 bits/s
 
-We have created our own **communication protocol** between **STM32** and **Serial-Server** for: hearbeat signals, save & read requests and responses, error handling.
+We have created our own **communication protocol** between **STM32** and **Serial-Server** for: heartbeat signals, save & read requests and responses, error handling.
 
 Here is the **Communication Protocol** between two separated parts of our project below:
 
