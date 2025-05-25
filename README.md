@@ -10,7 +10,7 @@ This is an **RFID-based attendance logging system** built using the **STM32F407G
 
 ## System Overview
 
-### STM32 Side
+### STM32
 
 - Reads RFID cards using the **MFRC522** module.
 - Sends UID to the Serial Server via **UART** (for READ or SAVE).
@@ -18,7 +18,7 @@ This is an **RFID-based attendance logging system** built using the **STM32F407G
 - Plays buzzer tones for feedback.
 - Listens for a heartbeat signal every 2 seconds to maintain serial connection health.
 
-### Serial-Server Side (Python)
+### Serial-Server (Python)
 
 - Receives UIDs from STM32 as either **READ** or **SAVE** requests.
 - For **READ**: Looks up the UID in a local CSV database and responds with user information.
@@ -31,15 +31,15 @@ This is an **RFID-based attendance logging system** built using the **STM32F407G
 
 ## Device & App Preview
 
-### STM32 SERIAL STATES
+### STM32 SERIAL STATUS
 
-Serial States define in which stage the serial communication between **STM32 and Serial-Server**. STM32 listens for the **Hearbeat** (special heartbeat code) signals from the **Serial-Server** to maintain connection during the operation.
+Serial Status define in which stage the serial communication between **STM32 and Serial-Server**. STM32 listens for the **Hearbeat** (special heartbeat code) signals from the **Serial-Server** to maintain connection during the operation.
 
 ![11809138-2D02-4C6D-9ABF-94417818FC74_1_201_a](https://github.com/user-attachments/assets/273fc12b-dbd5-4602-a528-72e7e875f8bc)
 
 ### STM32 RFID MODES (Toggle Blue Button)
 
-While the Serial connection is stable we can use the built-in **STM32 Blue Button** to switch between **RFID modes** and process the wanted operation.
+While the Serial connection is stable we configured the the built-in **STM32 Blue Button** to switch between **RFID modes** and process the wanted operation.
 
 ![F935037A-E725-43DC-BD95-C0906572A4D3_1_201_a](https://github.com/user-attachments/assets/a4d029a3-059f-48dc-ad56-b186f9eaec93)
 
@@ -47,13 +47,13 @@ While the Serial connection is stable we can use the built-in **STM32 Blue Butto
 
 // images
 
-### CSV Database 
+### CSV Database
 
 // images
 
 ## Used Hardware and Software
 
-### STM32 Side
+### STM32
 
 - **Hardware Used**:
 
@@ -69,7 +69,7 @@ While the Serial connection is stable we can use the built-in **STM32 Blue Butto
   - [MFRC522 Library](https://github.com/MaJerle/stm32f429/tree/main/23-STM32F429_MFRC522) - This is **Standard Peripheral Library (SPL)** which some parts we rewrite for converting it to **HAL-compatible** code
   - `I2C-LCD` library to dislay messages on 16x2 LCD (PCF8574T)
 
-### Serial-Server Side
+### Serial-Server
 
 - **Libraries Used**:
 
@@ -85,7 +85,7 @@ While the Serial connection is stable we can use the built-in **STM32 Blue Butto
 
 We have created our own **communication protocol** between **STM32** and **Serial-Server** for: heartbeat signals, save & read requests and responses, error handling.
 
-Here is the **Communication Protocol** between two separated parts of our project below:
+We shown below the **Communication Protocol** between two separated parts of our project:
 
 ### 1) From SERIAL-SERVER to STM32
 
@@ -93,7 +93,7 @@ Here is the **Communication Protocol** between two separated parts of our projec
 
 **CODE:** Type of response
 
-- `H`: Heartbeat (every 2 seconds to keep serial communication)
+- `H`: Heartbeat (every 2 seconds to keep communication)
 - `R`: Read response
 - `S`: Save response
 
@@ -107,14 +107,14 @@ Here is the **Communication Protocol** between two separated parts of our projec
 
 - For `S` (Save):
 
-  - `OK`: UID saved
+  - `OK`: UID saved successfuly
   - `DUP`: Duplicate UID
-  - `ERR`: Save failed
+  - `ERR`: Saving failed
 
 **Examples:**
 
-- `H|STM32PY`
-- `R|Ahsen Yenisey-220201019`
+- `H|STM32PY` (**HEARBEAT_CODE** used as code for **Handshake Mechanism**)
+- `R|Ahsen Yenisey-220201019` (**user_name**-**user_id**)
 - `R|ERR`
 - `S|OK`
 - `S|DUP`

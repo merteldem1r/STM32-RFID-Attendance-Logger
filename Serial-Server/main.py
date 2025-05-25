@@ -8,7 +8,6 @@ import time
 import threading
 
 # USB to TTL port on macos (change based on your PORT)
-
 SERIAL_PORT: str = "/dev/tty.usbserial-B0044FJ3"
 
 ser = None
@@ -27,8 +26,9 @@ def Start_Serial():
 
 Start_Serial()
 
-# AUTHENTICATION code to send STM32 to keep Serial Communication
-HEART_BEAT_CODE = "STM32PY"
+# HEARTBEAT_CODE used as Handshake mechanism between STM32 and Serial-Server
+# this code is just an example and also it definitely should be stored in .env 
+HEARTBEAT_CODE = "STM32PY"
 
 """ 
 COMMUNICATION PROTOCOL:
@@ -97,7 +97,7 @@ def heartbeat_thread(ser: serial.Serial):
     while True:
         try:
             with serial_lock:
-                heartbeat_str = f"H|{HEART_BEAT_CODE}\n"
+                heartbeat_str = f"H|{HEARTBEAT_CODE}\n"
                 ser.write(heartbeat_str.encode())
             time.sleep(2)
         except Exception as e:
@@ -115,7 +115,7 @@ try:
             data = ser.read_all().decode("utf-8").strip()
             data_list = data.split(" ")
 
-            if len(data_list) == 0:  # for empty data like "" or " ".
+            if len(data_list) == 0: 
                 continue
 
             if data == "HB":
@@ -135,10 +135,10 @@ try:
                 f"Received from STM32:  {data}")
 
             if rfid_mode == "1":
-                # SAVE
+                # SAVE Request
                 CSV_UTIL.save_db(ser, card_uid_str, lock=serial_lock)
             elif rfid_mode == "0":
-                # READ
+                # READ Request
                 CSV_UTIL.read_db(ser, card_uid_str, lock=serial_lock)
             else:
                 pass
