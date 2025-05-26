@@ -18,9 +18,16 @@ def Initialize_DB():
 def send_serial_message(ser: serial.Serial, response_mode: str, message: str, lock: threading.Lock = None):
     if lock:
         with lock:
-            message_str = f"{response_mode}|{message}\n"
-            ser.write(message_str.encode('utf-8'))
-            print("Sent to STM32: ", message_str)
+            message_str = f"{response_mode}|{message}"
+            
+            ser.write(f"{message_str}\n".encode('utf-8'))
+            print("-> Sent to STM32: ", message_str)
+            
+            if response_mode == "S" and message == "OK":
+                print(f"Card UID saved, please update user_name and user_id in uid.csv")
+                
+            print("\n")
+
     else:
         ser.write(message.encode('utf-8'))
 

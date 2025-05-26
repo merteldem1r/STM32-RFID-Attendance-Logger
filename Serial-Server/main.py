@@ -10,6 +10,10 @@ import threading
 # USB to TTL port on macos (change based on your PORT)
 SERIAL_PORT: str = "/dev/tty.usbserial-B0044FJ3"
 
+# HEARTBEAT_CODE used as Handshake mechanism between STM32 and Serial-Server
+# this code is just an example and also it definitely should be stored in .env 
+HEARTBEAT_CODE = "STM32PY"
+
 ser = None
 
 def Start_Serial():
@@ -26,9 +30,27 @@ def Start_Serial():
 
 Start_Serial()
 
-# HEARTBEAT_CODE used as Handshake mechanism between STM32 and Serial-Server
-# this code is just an example and also it definitely should be stored in .env 
-HEARTBEAT_CODE = "STM32PY"
+CSV_UTIL.Initialize_DB()
+serial_lock = threading.Lock()
+
+
+def heartbeat_thread(ser: serial.Serial):
+    while True:
+        try:
+            with serial_lock:
+                heartbeat_str = f"H|{HEARTBEAT_CODE}\n"
+                ser.write(heartbeat_str.encode())
+            time.sleep(2)
+        except Exception as e:
+            print(f"Heartbeat thread error: {e}")
+            break
+
+
+# Start heartbeat thread
+heartbeat = threading.Thread(target=heartbeat_thread, args=(ser,), daemon=True)
+heartbeat.start()
+
+print(f"Heartbeat thread started: sending '{HEARTBEAT_CODE}' code to STM32\n")
 
 """ 
 COMMUNICATION PROTOCOL:
@@ -88,27 +110,6 @@ COMMUNICATION PROTOCOL:
             "1 D6 97 71 AF" (Read card from database and response with info)
 """
 
-CSV_UTIL.Initialize_DB()
-
-serial_lock = threading.Lock()
-
-
-def heartbeat_thread(ser: serial.Serial):
-    while True:
-        try:
-            with serial_lock:
-                heartbeat_str = f"H|{HEARTBEAT_CODE}\n"
-                ser.write(heartbeat_str.encode())
-            time.sleep(2)
-        except Exception as e:
-            print(f"Heartbeat thread error: {e}")
-            break
-
-
-# Start heartbeat thread
-heartbeat = threading.Thread(target=heartbeat_thread, args=(ser,), daemon=True)
-heartbeat.start()
-
 try:
     while True:
         if ser.in_waiting > 0:
@@ -132,7 +133,7 @@ try:
                 continue
 
             print(
-                f"Received from STM32:  {data}")
+                f"<- Received from STM32:  {data}")
 
             if rfid_mode == "1":
                 # SAVE Request

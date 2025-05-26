@@ -14,7 +14,7 @@ This is an **RFID-based attendance logging system** built using the **STM32F407G
 
 - Reads RFID cards using the **MFRC522** module.
 - Sends UID to the Serial Server via **UART** (for READ or SAVE).
-- Displays the received user information (name and ID) on the **LCD**.
+- Displays the received user information (**user_name** and **user_id**) on the **LCD**.
 - Plays buzzer tones for feedback.
 - Listens for a heartbeat signal every 2 seconds to maintain serial connection health.
 

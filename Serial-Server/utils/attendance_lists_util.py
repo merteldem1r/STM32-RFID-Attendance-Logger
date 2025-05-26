@@ -12,7 +12,7 @@ full_date = f"{current_day}" + "-" + f"{current_month}" + "-" + f"{current_year}
 
 print(full_date)
 
-PATH_AL = f"../Database/attendance_lists/{full_date}.csv"
+PATH_AL:str = f"../Database/attendance_lists/{full_date}.csv"
 
 
 def create_attendance_list():
@@ -22,7 +22,12 @@ def create_attendance_list():
         os.makedirs("./attendance_lists", exist_ok=True)
         df.to_csv(PATH_AL, index=False)
         
-def update_attendance_list(card_uid_str: str, user_name, user_id):
+        # print created list path
+        path_slice_indez =PATH_AL.rfind('/') 
+        if path_slice_indez != -1:
+            print(f"List created: {PATH_AL[path_slice_indez + 1:]}")
+        
+def update_attendance_list(card_uid_str: str, user_name: str, user_id: str):
     df = pd.read_csv(PATH_AL, sep=",", engine="python")
     df = df.dropna(how="all")
 
@@ -44,3 +49,5 @@ def update_attendance_list(card_uid_str: str, user_name, user_id):
         df.loc[df["card_uid"] == card_uid_str, "total_reads"] += 1
         df.loc[df["card_uid"] == card_uid_str, "last_log_date"] = new_time
         df.to_csv(PATH_AL, index=False)
+        
+        print(f"Attendance Logged, User: '{user_name}' Time: '{new_time}'", )
