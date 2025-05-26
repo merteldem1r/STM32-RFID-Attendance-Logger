@@ -43,13 +43,19 @@ While the Serial connection is stable we configured the the built-in **STM32 Blu
 
 ![F935037A-E725-43DC-BD95-C0906572A4D3_1_201_a](https://github.com/user-attachments/assets/a4d029a3-059f-48dc-ad56-b186f9eaec93)
 
-### STM32 - Serial Server Operation Examples
+### STM32 - Serial Server Operations
 
-// images
+- ### STM32
+  
+![A6FF935E-8A60-4E54-A7A5-8984016B0444_1_201_a](https://github.com/user-attachments/assets/93afda48-6edd-47c0-b568-dbebdaf416e3)
 
-### CSV Database
+- ### Serial-Server Logs
+ 
+![970E56A5-7F5E-4A0A-A7E9-BE0F2AE58EF2_1_201_a](https://github.com/user-attachments/assets/b5e95958-dbbf-413d-b55e-aef6e90967f2)
 
-// images
+### Database
+
+![828E024E-9857-46B3-82CC-006DA0FFBAF6_1_201_a](https://github.com/user-attachments/assets/0d7e3045-f512-46d9-b30b-aed6ad9998d5)
 
 ## Used Hardware and Software
 
