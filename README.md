@@ -46,8 +46,8 @@ While the Serial connection is stable we configured the the built-in **STM32 Blu
 ### STM32 - Serial Server Operations
 
 - ### STM32
-  
-![A6FF935E-8A60-4E54-A7A5-8984016B0444_1_201_a](https://github.com/user-attachments/assets/93afda48-6edd-47c0-b568-dbebdaf416e3)
+
+![stm32-serial-server](https://github.com/user-attachments/assets/f4ec4899-bcc6-44c0-b811-514adefafa27)
 
 - ### Serial-Server Logs
  
@@ -134,7 +134,7 @@ We shown below the **Communication Protocol** between two separated parts of our
 - `0`: **Read** (check user and response the info & log the attendance data)
 - `1`: **Save** (add UID to the database)
 
-**UID:** 4-byte UID (space separated as HEX format)
+**UID:** 4-byte UID (space separated in HEX format)
 
 **Examples:**
 
