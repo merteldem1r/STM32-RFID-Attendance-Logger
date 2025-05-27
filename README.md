@@ -1,6 +1,6 @@
 # STM32 RFID Attendance Logger
 
-![preview](https://github.com/user-attachments/assets/d679b11e-f3bc-4dff-b29e-ed7bd3e67ba4)
+![1](https://github.com/user-attachments/assets/b07f7912-5de1-409c-9380-9c9f6b6055af)
 
 ## Project Description
 
@@ -51,7 +51,7 @@ While the Serial connection is stable we configured the the built-in **STM32 Blu
 
 - ### Serial-Server Logs
  
-![970E56A5-7F5E-4A0A-A7E9-BE0F2AE58EF2_1_201_a](https://github.com/user-attachments/assets/b5e95958-dbbf-413d-b55e-aef6e90967f2)
+![688C16BF-270A-434B-B773-F1BC6148472F_1_201_a](https://github.com/user-attachments/assets/0dba6936-cde8-4040-905a-1b09e786b66e)
 
 ### Database
 
