@@ -21,11 +21,11 @@ def send_serial_message(ser: serial.Serial, response_mode: str, message: str, lo
             message_str = f"{response_mode}|{message}"
             
             ser.write(f"{message_str}\n".encode('utf-8'))
-            print("-> Sent to STM32: ", message_str)
             
             if response_mode == "S" and message == "OK":
                 print(f"Card UID saved, please update user_name and user_id in uid.csv")
                 
+            print("-> Sent to STM32: ", message_str)
             print("\n")
 
     else:
