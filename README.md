@@ -89,6 +89,33 @@ While the Serial connection is stable we configured the the built-in **STM32 Blu
   - `numpy` `pandas`
   - `pytz` `six` `python-dateutil` `tzdata`
 
+## How the RFID-RC522 Module Works
+
+### 1. RFID Technology Overview
+
+RFID (Radio-Frequency Identification) is a wireless communication technology that enables contactless data exchange between an RFID reader and a tag/card. Each RFID card has a unique identifier (UID). When the card is brought near the reader, the reader generates an electromagnetic field to power the passive RFID tag and communicate with it over radio waves.
+
+---
+
+### 2. RFID-RC522 Module Components and Role
+
+The **RFID-RC522** module is based on the MFRC522 chip and operates at 13.56 MHz. It communicates with the STM32 microcontroller via **SPI** interface. Key components include:
+
+- **Antenna Coil**: Emits the electromagnetic field that powers the RFID card.
+- **MFRC522 Chip**: Handles RFID communication protocols, reading/writing card data, and detecting cards.
+- **SPI Interface**: Enables communication with the STM32 microcontroller.
+
+---
+
+### 3. Communication Flow
+
+1. The STM32 continuously checks for nearby RFID cards.
+2. When a card is detected, the MFRC522 reads its UID.
+3. The UID is sent over UART to the Serial Server (Python).
+4. Based on the server's response, the STM32 triggers actions such as displaying user info or logging attendance.
+
+This module is essential for enabling secure, contactless identification in the attendance system.
+
 ## Communication between STM32 & Serial Server
 
 **IMPORTANT NOTE**: Unlike the Nucleo boards, the **STM32F407G-DISC1** microcontroller not has a virtual COM port to ST-LINK for UART communication. That's why our messages transmits via external **USB to TTL** converter (FT232RL) from connected **TX** and **RX pins**.
