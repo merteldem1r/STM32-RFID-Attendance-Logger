@@ -8,11 +8,7 @@ This is an **RFID-based attendance logging system** built using the **STM32F407G
 
 This is school project for **Embedded Systems** class.
 
-**AUTHORS**:
-</br>
- **[Mert Eldemir](https://github.com/merteldem1r) | Student No: 220201019**
- </br>
- **[Ahsen Yenisey](https://github.com/ahsenyenisey) | Student No: 220201014**
+**AUTHORS**: [Mert Eldemir](https://github.com/merteldem1r) & [Ahsen Yenisey](https://github.com/ahsenyenisey) 
 
 ## System Overview
 
@@ -88,31 +84,6 @@ While the Serial connection is stable we configured the the built-in **STM32 Blu
   - `pyserial`
   - `numpy` `pandas`
   - `pytz` `six` `python-dateutil` `tzdata`
-
-## How the RFID-RC522 Module Works
-
-### 1. RFID Technology Overview
-
-RFID (Radio-Frequency Identification) is a wireless communication technology that enables contactless data exchange between an RFID reader and a tag/card. Each RFID card has a unique identifier (UID). When the card is brought near the reader, the reader generates an electromagnetic field to power the passive RFID tag and communicate with it over radio waves.
-
-### 2. RFID-RC522 Module Components and Role
-
-The **RFID-RC522** module is based on the MFRC522 chip and operates at 13.56 MHz. It communicates with the STM32 microcontroller via **SPI** interface. Key components include:
-
-- **Antenna Coil**: Emits the electromagnetic field that powers the RFID card.
-- **MFRC522 Chip**: Handles RFID communication protocols, reading/writing card data, and detecting cards.
-- **SPI Interface**: Enables communication with the STM32 microcontroller.
-
-### 3. Communication Flow
-
-1. The STM32 continuously checks for nearby RFID cards.
-2. When a card is detected, the MFRC522 reads its UID.
-3. The UID is sent over UART to the Serial Server (Python).
-4. Based on the server's response, the STM32 triggers actions such as displaying user info or logging attendance.
-
-This module is essential for enabling secure, contactless identification in the attendance system.
-
----
 
 ## Communication between STM32 & Serial Server
 
