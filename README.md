@@ -6,7 +6,7 @@
 
 This is an **RFID-based attendance logging system** built using the **STM32F407G-DISC1** microcontroller and an **RFID-RC522** module. It enables **reading**, **saving**, and **logging attendance** of RFID cards through **UART serial communication** with a **Python-based Serial Server**.
 
-This is school project for **Embedded Systems** class.
+Self project for **Embedded Systems** class.
 
 **AUTHORS**: [Mert Eldemir](https://github.com/merteldem1r) & [Ahsen Yenisey](https://github.com/ahsenyenisey) 
 
