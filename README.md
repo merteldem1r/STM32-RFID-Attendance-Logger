@@ -66,7 +66,7 @@ While the Serial connection is stable we configured the the built-in **STM32 Blu
 - **Hardware Used**:
 
   - **STM32F407G-DISC1** microcontroller
-  - **RFID-RC522** module
+  - **RFID-RC522** module (13,56 MHz)
   - **LCD with I2C interface** (PCF8574T)
   - **Buzzer**
   - **USB to TTL converter** (FT232RL)
