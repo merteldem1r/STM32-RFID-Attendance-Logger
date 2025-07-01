@@ -1,10 +1,10 @@
 import serial
 import pandas as pd
 import os
-from utils import attendance_lists_util
 import threading
+from utils import attendance_lists_util
 
-
+   
 PATH_DB = "../Database/uid.csv"
 
 def Initialize_DB():
