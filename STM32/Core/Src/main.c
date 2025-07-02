@@ -137,7 +137,6 @@ void WaitStartupHeartbeatSerial() {
 	while ((HAL_GetTick() - startTime) < 10000) {
 		if (HAL_UART_Receive(&huart2, rxBuffer, 10, 100) == HAL_OK) {
 			// HB received
-			printf("Hello world");
 			char *msg = (char*) &rxBuffer[2];
 			char *newline = strchr(msg, '\n');
 			if (newline) {
@@ -259,7 +258,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 			memset(rxBuffer, 0, 32);
 		}
 
-		// Always re-enable interrupt for next byte
+		// interrupt for next byte
 		HAL_UART_Receive_IT(&huart2, &rxByte, 1);
 	}
 }
@@ -313,8 +312,6 @@ int main(void) {
 	WaitStartupHeartbeatSerial();
 
 	HAL_UART_Receive_IT(&huart2, rxBuffer, 1);
-
-// int main() variables
 
 // e.g. str = 1 D6 97 71 AF rfidModePrefix = "1" -> SAVE
 // e.g. str = 0 D6 97 71 AF rfidModePrefix = "0" -> READ

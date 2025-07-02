@@ -31,7 +31,7 @@ def update_attendance_list(card_uid_str: str, user_name: str, user_id: str):
     df = pd.read_csv(PATH_AL, sep=",", engine="python")
     df = df.dropna(how="all")
 
-    new_time = time.strftime("%d.%m.%Y %I:%M %p", time.localtime())
+    new_time = time.strftime("%d.%m.%Y %I:%M", time.localtime())
     
     if card_uid_str not in df["card_uid"].values:
         new_row = pd.DataFrame([{
