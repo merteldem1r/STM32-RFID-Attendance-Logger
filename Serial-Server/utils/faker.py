@@ -1,24 +1,25 @@
 import os
 import random
-import time
 import pandas as pd
 from typing import List
+from datetime import datetime, timedelta
+
 
 fake_users = [
-    "Samuel Turner",
-    "Jane Smith",
-    "Alice Johnson",
-    "Bob Brown",
+    "Samuel Turner", 
+    "Jane Smith", 
+    "Alice Johnson", 
+    "Bob Brown", 
     "Charlie Davis",
-    "Diana Miller",
-    "Edward Wilson",
-    "Fiona Clark",
-    "George Lewis",
+    "Diana Miller", 
+    "Edward Wilson", 
+    "Fiona Clark", 
+    "George Lewis", 
     "Hannah Young",
-    "Ian Walker",
-    "Julia Hall",
-    "Kevin Allen",
-    "Laura King",
+    "Ian Walker", 
+    "Julia Hall", 
+    "Kevin Allen", 
+    "Laura King", 
     "Michael Scott"
 ]
 
@@ -29,108 +30,89 @@ hex_digits = [
 
 PATH_DB = "../../Database/uid.csv"
 
-def random_uid():
-    # 0B 46 98 25
-    uid_str:str = ""
-    uid_arr: List[str] = []
-    
-    for i in range(4):
-        first_indx = random.randint(0, len(hex_digits) - 1)
-        second_indx = random.randint(0, len(hex_digits) - 1)
-        hex_num = f"{hex_digits[first_indx]}{hex_digits[second_indx]}"
-        uid_arr.append(hex_num)
-        
-    uid_str = " ".join(uid_arr)
 
+def random_uid() -> str:
     df = pd.read_csv(PATH_DB, sep=",", engine="python")
-    if uid_str in df["card_uid"].values:
-        random_uid()
-    
-    return uid_str
+    while True:
+        uid_arr = [f"{random.choice(hex_digits)}{random.choice(hex_digits)}" for _ in range(4)]
+        uid_str = " ".join(uid_arr)
+        if uid_str not in df["card_uid"].values:
+            return uid_str
 
-def random_user_id():
-    user_id_arr: List[str] = []
-    
-    for i in range(9):
-        user_id_arr.append(str(random.randint(0, 9)))
-        
-    return "".join(user_id_arr)
 
-def random_uid_db():
-    df = pd.read_csv(PATH_DB, sep=",", engine="python")
-    
-    for user in fake_users:
-        user_uid = random_uid()
-        user_id = random_user_id()
-        
-        new_row = pd.DataFrame([{
-            "card_uid": user_uid,
-            "user_name": user,
-            "user_id": user_id
-        }])
-        df = pd.concat([df, new_row], ignore_index=True)
-        df.to_csv(PATH_DB, index=False)
- 
-# random_uid_db()
-        
-def random_time():
+def random_user_id() -> str:
+    return "".join(str(random.randint(0, 9)) for _ in range(9))
+
+
+def random_time() -> str:
     hour = random.randint(10, 18)
     minute = random.randint(0, 59)
-    time_str = f"{hour:02d}.{minute:02d}"
-    
-    return time_str
-        
-def random_attendance_list():
-    # MODIFY below 3 variables on each call to create new attendance list
-    attentance_date = "02-06-2025" # random date for attendance list
-    user_count = 7 # random user pick count from uid.csv
-    total_read_interval = [1, 6] # min, max
-    
-    NEW_ATTENDANCE_PATH:str = f"../../Database/attendance_lists/{attentance_date}.csv"
-    
-    if os.path.exists(NEW_ATTENDANCE_PATH):
+    return f"{hour:02d}:{minute:02d}"
+
+
+def generate_attendance_for_date(attendance_date: datetime.date,
+                                 user_count: int = 9,
+                                 total_read_interval: List[int] = [1, 6]):
+
+    date_str = attendance_date.strftime("%d-%m-%Y")
+    output_path = f"../../Database/attendance_lists/{date_str}.csv"
+
+    if os.path.exists(output_path):
         return
-    
-    # create new attendance list
-    field_names = ["card_uid", "user_name", "user_id", "last_log_date", "total_reads"]
-    df = pd.DataFrame(columns=field_names)
-    os.makedirs("./attendance_lists", exist_ok=True)
-    df.to_csv(NEW_ATTENDANCE_PATH, index=False)
-    
-    # read uid.csv to pick random users
-    df = pd.read_csv(PATH_DB, sep=",", engine="python")
-    uid_list = df.values
-    
-    picked_indexes: List[int] = []
-    
-    # filling the attendance list with random users
-    while user_count > 0:
-        random_index = random.randint(0, len(uid_list) - 1)
-        if random_index in picked_indexes:
+
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    df_att = pd.DataFrame(columns=["card_uid", "user_name", "user_id", "last_log_date", "total_reads"]);
+    df_att.to_csv(output_path, index=False)
+
+    df_uids = pd.read_csv(PATH_DB, sep=",", engine="python")
+    uid_list = df_uids.values.tolist()
+    picked = set()
+
+    while len(picked) < user_count:
+        idx = random.randint(0, len(uid_list) - 1)
+        if idx in picked:
             continue
-        
-        picked_user:list = uid_list[random_index]
-        
-        df = pd.read_csv(NEW_ATTENDANCE_PATH, sep=",", engine="python")
-        df = df.dropna(how="all")
+        picked.add(idx)
+        card_uid, user_name, user_id = uid_list[idx]
 
-        date = attentance_date.replace("-", ".")
-        time = random_time()
-        
-        date_str = f"{date} {time}"
-        
+        date_for_log = attendance_date.strftime("%d.%m.%Y")
+        time_str = random_time()
+        last_log_date = f"{date_for_log} {time_str}"
+        total_reads = random.randint(total_read_interval[0], total_read_interval[1])
+
         new_row = pd.DataFrame([{
-            "card_uid": picked_user[0], # uid
-            "user_name": picked_user[1], # user_name
-            "user_id": picked_user[2], # user_id
-            "last_log_date": date_str, 
-            "total_reads": random.randint(total_read_interval[0], total_read_interval[1])
+            "card_uid": card_uid,
+            "user_name": user_name,
+            "user_id": user_id,
+            "last_log_date": last_log_date,
+            "total_reads": total_reads
         }])
-        df = pd.concat([df, new_row], ignore_index=True)
-        df.to_csv(NEW_ATTENDANCE_PATH, index=False)
+        df_att = pd.concat([df_att, new_row], ignore_index=True)
+        df_att.to_csv(output_path, index=False)
 
-        picked_indexes.append(random_index)
-        user_count -= 1
-    
 
-random_attendance_list()
+def generate_random_attendance_lists(num_lists: int = 15,
+                                     start_date_str: str = "01-01-2023",
+                                     end_date_str: str = "31-12-2025",
+                                     min_users: int = 1,
+                                     max_users: int = None):
+  
+    start_date = datetime.strptime(start_date_str, "%d-%m-%Y").date()
+    end_date = datetime.strptime(end_date_str, "%d-%m-%Y").date()
+    delta_days = (end_date - start_date).days
+
+    if max_users is None:
+        max_users = len(fake_users)
+
+    dates = set()
+    while len(dates) < num_lists:
+        rand_days = random.randint(0, delta_days)
+        dates.add(start_date + timedelta(days=rand_days))
+
+    for dt in sorted(dates):
+        user_count = random.randint(min_users, max_users)
+        generate_attendance_for_date(dt, user_count=user_count)
+
+
+if __name__ == "__main__":
+    generate_random_attendance_lists()
