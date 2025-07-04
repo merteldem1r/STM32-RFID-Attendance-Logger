@@ -6,140 +6,176 @@ from datetime import datetime, timedelta
 import calendar
 
 
-fake_users = [
-    "Samuel Turner",
-    "Jane Smith",
-    "Alice Johnson",
-    "Bob Brown",
-    "Charlie Davis",
-    "Diana Miller",
-    "Edward Wilson",
-    "Fiona Clark",
-    "George Lewis",
-    "Hannah Young",
-    "Ian Walker",
-    "Julia Hall",
-    "Kevin Allen",
-    "Laura King",
-    "Michael Scott"
-]
+class RandomCSVData:
+    PATH_DB = "../../Database/uid.csv"
+    fake_users = [
+        "Samuel Turner", "Jane Smith", "Alice Johnson", "Bob Brown", "Charlie Davis", "Diana Miller", "Edward Wilson", "Fiona Clark", "George Lewis", "Hannah Young", "Ian Walker", "Julia Hall", "Kevin Allen", "Laura King", "Michael Scott"
+    ]
+    hex_digits = [
+        "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+        "A", "B", "C", "D", "E", "F"
+    ]
 
-hex_digits = [
-    "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
-    "A", "B", "C", "D", "E", "F"
-]
+    def __init__(self, year: int, month: int, attendance_list_count: int, min_max_users: List[int], user_total_read_interval: List[int]):
+        self.year = year
+        self.month = month
+        self.attendance_list_count = attendance_list_count
+        self.min_max_users = min_max_users
+        self.user_total_read_interval = user_total_read_interval
 
-PATH_DB = "../../Database/uid.csv"
+    # PRIVATE METHODS
 
+    def __random_card_uid(self, existing_uids) -> str:
+        uid_str: str = ""
+        uid_arr: List[str] = []
 
-def random_uid() -> str:
-    df = pd.read_csv(PATH_DB, sep=",", engine="python")
-    uid_str: str = ""
-    uid_arr: List[str] = []
+        while True:
+            for i in range(4):
+                first_indx = random.randint(
+                    0, len(self.hex_digits) - 1)
+                second_indx = random.randint(
+                    0, len(self.hex_digits) - 1)
+                hex_num = f"{self.hex_digits[first_indx]}{self.hex_digits[second_indx]}"
 
-    while True:
-        for i in range(4):
-            first_indx = random.randint(0, len(hex_digits) - 1)
-            second_indx = random.randint(0, len(hex_digits) - 1)
-            hex_num = f"{hex_digits[first_indx]}{hex_digits[second_indx]}"
-            uid_arr.append(hex_num)
+                uid_arr.append(hex_num)
 
-        uid_str = " ".join(uid_arr)
-        if uid_str not in df["card_uid"].values:
-            return uid_str
+            uid_str = " ".join(uid_arr)
+            if uid_str not in existing_uids:
+                return uid_str
 
+    def __random_user_id(self):
+        user_id_arr: List[str] = []
 
-def random_user_id():
-    user_id_arr: List[str] = []
+        for i in range(9):
+            user_id_arr.append(str(random.randint(1, 9)))
 
-    for i in range(9):
-        user_id_arr.append(str(random.randint(1, 9)))
+        return "".join(user_id_arr)
 
-    return "".join(user_id_arr)
+    def __random_time(self) -> str:
+        hour = random.randint(10, 18)
+        minute = random.randint(0, 59)
+        return f"{hour:02d}:{minute:02d}"
 
-
-def random_uid_db():
-    df = pd.read_csv(PATH_DB, sep=",", engine="python")
-
-    for user in fake_users:
-        user_uid = random_uid()
-        user_id = random_user_id()
-
-        new_row = pd.DataFrame([{
-            "card_uid": user_uid,
-            "user_name": user,
-            "user_id": user_id
-        }])
-        df = pd.concat([df, new_row], ignore_index=True)
-        df.to_csv(PATH_DB, index=False)
-
-# random_uid_db()
-
-
-def random_time() -> str:
-    hour = random.randint(10, 18)
-    minute = random.randint(0, 59)
-    return f"{hour:02d}:{minute:02d}"
-
-
-def random_attendance_list(year: int, num_lists: int, min_max_interval: List[int], total_read_interval: List[int]):
-    for _ in range(num_lists):
-        random_month = random.randint(1, 12)
-        day_count = calendar.monthrange(year, random_month)[1]
+    def __random_attendance_list_date(self) -> str:
+        random_month = random.randint(
+            1, 12) if self.month == None else self.month
+        day_count = calendar.monthrange(self.year, random_month)[1]
         random_day = random.randint(1, day_count)
 
-        attentance_date: str = f"{random_day:02}-{random_month:02}-{year}"
+        attentance_date: str = f"{random_day:02}-{random_month:02}-{self.year}"
 
-        NEW_ATTENDANCE_PATH: str = f"../../Database/attendance_lists/{attentance_date}.csv"
+        return attentance_date
 
-        if os.path.exists(NEW_ATTENDANCE_PATH):
-            continue
+    # Read uid.csv to pick random users
+    def __pick_random_users_from_db(self) -> List[List[str]]:
+        if not os.path.exists(self.PATH_DB):
+            print("uid.csv is not found")
+            return
 
-        # create new attendance list
-        os.makedirs("./attendance_lists", exist_ok=True)
+        df = pd.read_csv(self.PATH_DB, sep=",", engine="python")
+        uid_list = df.values.tolist()
 
-        field_names = ["card_uid", "user_name",
-                       "user_id", "last_log_date", "total_reads"]
-        df = pd.DataFrame(columns=field_names)
-        df.to_csv(NEW_ATTENDANCE_PATH, index=False)
-
-        # read uid.csv to pick random users
-        df_db = pd.read_csv(PATH_DB, sep=",", engine="python")
-        uid_list = df_db.values.tolist()
-
-        # attendace csv
-        df_attendance = pd.read_csv(
-            NEW_ATTENDANCE_PATH, sep=",", engine="python")
-        df_attendance = df.dropna(how="all")
-
-        user_count = random.randint(min_max_interval[0], min_max_interval[1])
-        print("user_count ", user_count)
+        user_count = random.randint(
+            self.min_max_users[0], self.min_max_users[1])
 
         if user_count >= len(uid_list):
-            print("wrong user count")
+            print("Wrong user count")
             return
 
         random_user_arr = random.sample(uid_list, user_count)
-        last_log_date = attentance_date.replace("-", ".")
 
-        # filling the attendance list with random users
-        for random_user in random_user_arr:
-            card_uid, user_name, user_id = random_user
-            print("random_user", random_user)
+        return random_user_arr
 
-            time = random_time()
-            random_last_log_date = f"{last_log_date} {time}"
+    # generate new list and return attendance list date to use for path and last_log_date
+    def __generate_random_attendance_list(self) -> str:
+        attendance_list_date = self.__random_attendance_list_date()
+        attendance_list_path: str = f"../../Database/attendance_lists/{attendance_list_date}.csv"
 
-            new_row = pd.DataFrame([{
+        if os.path.exists(attendance_list_path):
+            return
+
+        # create new attendance list
+        os.makedirs("../../Database/attendance_lists", exist_ok=True)
+        field_names = ["card_uid", "user_name",
+                       "user_id", "last_log_date", "total_reads"]
+        df = pd.DataFrame(columns=field_names)
+        df.to_csv(attendance_list_path, index=False)
+
+        return attendance_list_date
+
+    # PUBLIC METHODS (use only these methods outside of class)
+
+    # To fill up uid.csv with random users if needed
+    def generate_random_users_in_db(self):
+        if not os.path.exists(self.PATH_DB):
+            print("uid.csv is not found")
+            return
+
+        df = pd.read_csv(self.PATH_DB, sep=",", engine="python")
+        existing_uids = df["card_uid"].values
+        new_user_rows: List[dict] = []
+
+        for user in self.fake_users:
+            card_uid = self.__random_card_uid(existing_uids)
+            user_id = self.__random_user_id()
+
+            new_user_rows.append({
                 "card_uid": card_uid,
-                "user_name": user_name,
-                "user_id": user_id,
-                "last_log_date": random_last_log_date,
-                "total_reads": random.randint(total_read_interval[0], total_read_interval[1])
-            }])
+                "user_name": user,
+                "user_id": user_id
+            })
+
+        df = pd.concat([df, pd.DataFrame(new_user_rows)], ignore_index=True)
+        df.to_csv(self.PATH_DB, index=False)
+
+    # Complete function to generate multiple random attendance lists with random users and data inside
+    def generate_random_attendance_lists(self):
+        for _ in range(self.attendance_list_count):
+            # generate new list
+            generated_attendance_list_date = self.__generate_random_attendance_list()
+            generated_attendance_list_path = f"../../Database/attendance_lists/{generated_attendance_list_date}.csv"
+
+            # read generated attendace csv file
+            df_attendance = pd.read_csv(
+                generated_attendance_list_path, sep=",", engine="python")
+            df_attendance = df_attendance.dropna(how="all")
+
+            # filling the attendance list with random users
+            random_users_arr = self.__pick_random_users_from_db()
+            last_log_date = generated_attendance_list_date.replace("-", ".")
+
+            new_attendance_rows: List[dict] = []
+
+            for random_user in random_users_arr:
+                card_uid, user_name, user_id = random_user
+                time = self.__random_time()
+                last_log_date_colum = f"{last_log_date} {time}"
+
+                new_attendance_rows.append({
+                    "card_uid": card_uid,
+                    "user_name": user_name,
+                    "user_id": user_id,
+                    "last_log_date": last_log_date_colum,
+                    "total_reads": random.randint(self.user_total_read_interval[0], self.user_total_read_interval[1])
+                })
+
             df_attendance = pd.concat(
-                [df_attendance, new_row], ignore_index=True)
-            df_attendance.to_csv(NEW_ATTENDANCE_PATH, index=False)
+                [df_attendance, pd.DataFrame(new_attendance_rows)], ignore_index=True)
+            df_attendance.to_csv(generated_attendance_list_path, index=False)
 
 
-random_attendance_list(2025, 5, (3, 7), (1, 7))
+"""
+For what (__name__ == "__main__") is used:
+  - If you run this file directly, it generates the lists.
+  - If you import RandomCSVData from another script, it won’t run automatically — it just provides the class.
+"""
+if __name__ == "__main__":
+    # Example 1 WITH specifying month
+    RandomLists = RandomCSVData(year=2024, month=2, attendance_list_count=5, min_max_users=[
+                                4, 12], user_total_read_interval=[1, 4])
+    RandomLists.generate_random_attendance_lists()
+
+    # Example 2 WITHOUT specifying month
+    RandomLists2 = RandomCSVData(year=2023, month=None, attendance_list_count=7, min_max_users=[
+        4, 12], user_total_read_interval=[1, 4])
+    RandomLists2.generate_random_attendance_lists()
