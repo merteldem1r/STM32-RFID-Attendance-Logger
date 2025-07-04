@@ -176,9 +176,9 @@ if __name__ == "__main__":
     # Example 1 WITH specifying month
     RandomLists = RandomCSVData(year=2024, month=2, attendance_list_count=29, min_max_users=[
                                 4, 12], user_total_read_interval=[1, 4])
-    RandomLists.generate_random_attendance_lists()
+    # RandomLists.generate_random_attendance_lists()
 
     # Example 2 WITHOUT specifying month
-    RandomLists2 = RandomCSVData(year=2023, month=None, attendance_list_count=7, min_max_users=[
+    RandomLists2 = RandomCSVData(year=2025, month=None, attendance_list_count=5, min_max_users=[
         4, 12], user_total_read_interval=[1, 4])
-    # RandomLists2.generate_random_attendance_lists()
+    RandomLists2.generate_random_attendance_lists()
