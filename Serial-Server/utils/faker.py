@@ -132,6 +132,10 @@ class RandomCSVData:
         for _ in range(self.attendance_list_count):
             # generate new list
             generated_attendance_list_date = self.__generate_random_attendance_list()
+
+            if generated_attendance_list_date == None:
+                continue
+
             generated_attendance_list_path = f"../../Database/attendance_lists/{generated_attendance_list_date}.csv"
 
             # read generated attendace csv file
@@ -170,11 +174,11 @@ For what (__name__ == "__main__") is used:
 """
 if __name__ == "__main__":
     # Example 1 WITH specifying month
-    RandomLists = RandomCSVData(year=2024, month=2, attendance_list_count=5, min_max_users=[
+    RandomLists = RandomCSVData(year=2024, month=2, attendance_list_count=29, min_max_users=[
                                 4, 12], user_total_read_interval=[1, 4])
     RandomLists.generate_random_attendance_lists()
 
     # Example 2 WITHOUT specifying month
     RandomLists2 = RandomCSVData(year=2023, month=None, attendance_list_count=7, min_max_users=[
         4, 12], user_total_read_interval=[1, 4])
-    RandomLists2.generate_random_attendance_lists()
+    # RandomLists2.generate_random_attendance_lists()
