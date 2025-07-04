@@ -2,7 +2,6 @@ import os
 import random
 import pandas as pd
 from typing import List
-from datetime import datetime, timedelta
 import calendar
 
 
@@ -167,7 +166,7 @@ class RandomCSVData:
 """
 For what (__name__ == "__main__") is used:
   - If you run this file directly, it generates the lists.
-  - If you import RandomCSVData from another script, it won’t run automatically — it just provides the class.
+  - If you import RandomCSVData from another script, it won't run automatically — it just provides the class.
 """
 if __name__ == "__main__":
     # Example 1 WITH specifying month
