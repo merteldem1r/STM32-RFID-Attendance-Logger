@@ -6,7 +6,7 @@
 
 This is an **RFID-based attendance logging system** built using the **STM32F407G-DISC1** microcontroller and an **RFID-RC522** module. It enables **reading**, **saving**, and **logging attendance** of RFID cards through **UART serial communication** with a **Python-based Serial Server**.
 
-Self project for **Embedded Systems** class.
+Self project for  **COME412 - Embedded Systems** class.
 
 **AUTHORS**: [Mert Eldemir](https://github.com/merteldem1r) & [Ahsen Yenisey](https://github.com/ahsenyenisey) 
 
@@ -29,7 +29,7 @@ Self project for **Embedded Systems** class.
 
 ## Project Flawchart
 
-![710F8E9D-DAC3-4D02-ABF5-22CAD0B8E89C_1_201_a](https://github.com/user-attachments/assets/47f69778-43fb-4a11-be02-e5f067d4f07b)
+![DB403673-F6D5-4C11-8866-822FF09EDC76_1_201_a](https://github.com/user-attachments/assets/34f92bf9-b25d-43de-b375-1f7a963f02b3)
 
 ## Device & App Preview
 
@@ -47,9 +47,11 @@ While the Serial connection is stable we configured the the built-in **STM32 Blu
 
 ### STM32 - Serial Server Operations
 
-- ### STM32
+Here is the example of **saving new user to the database**, **getting same user from database** and **logging attendance** information. Also some error and duplicate responce examples shown below.
 
-![stm32-serial-server](https://github.com/user-attachments/assets/f4ec4899-bcc6-44c0-b811-514adefafa27)
+- ### STM32
+  
+![4](https://github.com/user-attachments/assets/a03a760b-a557-4ce3-b810-0b3b78337c26)
 
 - ### Serial-Server Logs
  
@@ -57,7 +59,15 @@ While the Serial connection is stable we configured the the built-in **STM32 Blu
 
 ### Database
 
+Local **CSV** based database where we store main user information in **uid.csv** and the **attendance_lists** folder where we have date by date attendance logs.
+
 ![828E024E-9857-46B3-82CC-006DA0FFBAF6_1_201_a](https://github.com/user-attachments/assets/0d7e3045-f512-46d9-b30b-aed6ad9998d5)
+
+### Statistics
+
+The **stats.ipynb** notebook includes basic data visualizations. Those bar, line, and column charts that display various user **statistics** and attendance metrics based on dates, counts, and distributions.
+
+![7](https://github.com/user-attachments/assets/ae27169c-e7b1-463d-9eaf-a2706acf54fb)
 
 ## Used Hardware and Software
 
@@ -82,7 +92,7 @@ While the Serial connection is stable we configured the the built-in **STM32 Blu
 - **Libraries Used**:
 
   - `pyserial`
-  - `numpy` `pandas`
+  - `numpy` `pandas` `matplotlib`
   - `pytz` `six` `python-dateutil` `tzdata`
 
 ## Communication between STM32 & Serial Server
