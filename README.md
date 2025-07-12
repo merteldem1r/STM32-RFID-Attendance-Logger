@@ -1,6 +1,6 @@
 # STM32 RFID Attendance Logger
 
-![1](https://github.com/user-attachments/assets/b07f7912-5de1-409c-9380-9c9f6b6055af)
+<img width="1920" height="1080" alt="stm32-thumbnail" src="https://github.com/user-attachments/assets/4f9dc8ce-15d2-4708-9930-c0000b67822e" />
 
 ## Project Description
 
